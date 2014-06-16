@@ -5,100 +5,57 @@
 -->
 
 <!--
-
-gce-disk creates a Google Compute Engine disk.
-
-##### Example
-
-  <google-gapi ...></google-gapi>
-  <gcloud-config ...></gcloud-config>
-  <gce-disk id="my-disk" name="my-name" zone="zone" image="my-image"></gce-disk>
-  <script>
-    document.querySelector('#my-disk').go(function(result) {
-      console.log(result);
-    });
-  </script>
-
-@element gce-disk
-@blurb gce-disk creates a Google Compute Engine disk from an image 
-@status alpha
-@url https://github.com/proppy/gce-elements
+gcloud-compute-base is a base element containing common
+data and behavior to be inherited by other components 
+within this collection. This element is intended for
+internal use within this component collection - it should 
+not be directly specified by developers.
 -->
 
-<polymer-element name="gce-disk" attributes="name zone size image">
+<polymer-element name="gcloud-compute-base" 
+  attributes="scope"> 
 
   <script>
-
     Polymer({
+      api_version: 'v1',
+      base_url: 'https://www.googleapis.com/compute/' + 
+                this.api_version + '/projects/',
+
       /**
-       * The `name` attribute is the name of the disk resource.
+       * 'scope' is the Compute Engine scope associated 
+       * with a given resource. In practical terms, if will
+       * be a string taken from the following set of values:
+       * 'global', 'regional', 'zonal'
        *
-       * @attribute name
+       * @attribute scope
        * @type string
        */
-      name: '',
-
-      /**
-       * The `zone` is the name of the desired zone for this disk.
-       *
-       * @attribute zone
-       * @type string
-       */
-      zone: 'us-central1-a',
-
-      /**
-       * The `size` is the desired capacity (in GB) for this disk.
-       *
-       * @attribute size
-       * @type integer 
-       */
-      size: 10,
-
-      /**
-       * The `image` is the name of the image on Google Compute Engine.
-       *
-       * @attribute image
-       * @type string
-       */
-      image: '',
-
+      scope: 'global',
+      
       ready: function() {
         this.gapi = document.querySelector('google-gapi');
-        this.gcloud = document.querySelector('gcloud-config');
-      },
-
-      /**
-       * The `go` method creates the Google Compute Engine disk.
-       *
-       * @method go
-       * @return {Object} Returns undefined.
-       */
-      go: function() {
-        var API_VERSION = 'v1';
-        var BASE_URL = 'https://www.googleapis.com/compute/' + API_VERSION +
-                       '/projects/';
-        this.gapi.auth(function(result) {
-          var payload = {
-            project: this.gcloud.project,
-            zone: this.zone,
-            resource: {
-              name: this.name,
-              sizeGb: this.size,
-              sourceImage: BASE_URL + this.gcloud.project + 
-                           '/global/images/' + this.image
-            }
-          };
-          gapi.client.compute.disks.insert(payload).execute(this.wait.bind(this));
-        }.bind(this));
+        this.config = document.querySelector('gcloud-config');
+        if (scope == 'global') {
+          this.wait_func = 
+            gapi.client.compute.globalOperations;
+        } else if (scope == 'regional') {
+          this.wait_func = 
+            gapi.client.compute.regionOperations;
+        } else if (scope == 'zonal') {
+          this.wait_func = gapi.client.compute.zoneOperations;
+        }
       },
 
       wait: function(result) {
         console.log(result);
-        gapi.client.compute.zoneOperations.get({
+        var get_req = {
           operation: result.name,
-          project: this.gcloud.project,
-          zone: this.zone
-        }).execute(function(result) {
+          project: this.config.project,
+        }
+        if (scope == 'zonal') {
+          get_req['zone'] = this.zone;
+        }
+        this.wait_func.get(get_req).execute(function(result) {
           if (result.status != "DONE") {
             this.async(this.wait, result, 1000);
           } else {
@@ -106,34 +63,139 @@ gce-disk creates a Google Compute Engine disk.
           }
         }.bind(this));
        }
-    });
-
-  </script>
 
 </polymer-element>
+
 <!--
-gce-image creates a Google Compute Engine image.
+gcloud-compute-disk creates a Google Compute Engine disk.
+Suitable defaults are chosen for all attributes so that,
+in the simplest use case, you can create a disk without 
+specifying any attributes.
+
+##### Example
+
+  <google-gapi ...></google-gapi>
+  <gcloud-config ...></gcloud-config>
+  <gcloud-compute-disk id="my-disk"></gcloud-compute-disk>
+  <script>
+    document.querySelector('#my-disk').go(function(result) {
+      console.log(result);
+    });
+  </script>
+
+@element gcloud-compute-disk
+@blurb gcloud-compute-disk creates a Google Compute Engine disk
+@status alpha
+@url https://github.com/GoogleWebComponents/google-gcloud
+-->
+
+<polymer-element name="gcloud-compute-disk" 
+  attributes="name zone size image" 
+  extends="gcloud-compute-base">
+
+  <script>
+    Polymer({
+      /**
+       * 'name' is the name to assign to the new disk.
+       * @attribute name
+       * @type string
+       */
+      name: 'my-disk',
+
+      /**
+       * 'zone' is the desired location for the new disk.
+       * @attribute zone
+       * @type string
+       */
+      zone: 'us-central1-a',
+
+      /**
+       * 'size' is the capacity (in GB) for the new disk.
+       * @attribute size
+       * @type integer 
+       */
+      size: 10,
+
+      /**
+       * 'image' is the image to use for the new disk.
+       * It may contain a ':', in which case the image
+       * string is assumed to contain a project and
+       * and image name with that project, e.g.,
+       *
+       *   debian-cloud:debian-7-wheezy-v20140606
+       *
+       * It's also acceptable to specify a null project
+       * with or without the colon, which assumes the
+       * desired image is to be taken from the project
+       * configured by the <gcloud-config> element.
+       *
+       * @attribute image
+       * @type string
+       */
+      image: 'debian-cloud:debian-7-wheezy-v20140606',
+
+      /**
+       * The 'go' method creates the Compute Engine disk.
+       * @method go
+       * @return {Object} Returns undefined.
+       */
+      go: function() {
+        this.gapi.auth(function(result) {
+          var li = this.image.split(':');
+          var image_project = '';
+          var image_name = '';
+          if (li.length == 2) {
+            image_project = li[0]; 
+            image_name = li[1]; 
+          } else if (li.length == 1) {
+            image_project = this.config.project; 
+            image_name = li[0]; 
+          } else {
+            image_project = this.config.project; 
+            image_name = 'default'; 
+          }
+          var payload = {
+            project: this.config.project,
+            zone: this.zone,
+            resource: {
+              name: this.name,
+              sizeGb: this.size,
+              sourceImage: this.base_url + image_project + 
+                           '/global/images/' + image_name;
+            }
+          };
+          gapi.client.compute.disks.insert(payload).execute(this.wait.bind(this));
+        }.bind(this));
+      }
+    });
+  </script>
+</polymer-element>
+
+<!--
+gcloud-compute-image creates a Google Compute Engine image.
 
 ##### Example
 
     <google-gapi ...></google-gapi>
     <gcloud-config ...></gcloud-config>
-    <gce-image id="my-image" src="gs://my-bucket/my-filesystem.tar.gz"></gce-image>
+    <gcloud-compute-image id="my-image" src="gs://my-bucket/my-filesystem.tar.gz"></gcloud-compute-image>
     <script>
       document.querySelector('#my-image').go(function(result) {
         console.log(result);
       });
     </script>
 
-@element gce-image
-@blurb gce-image creates a Google Compute Engine image from a filesystem tarball on Google Cloud Storage.
+@element gcloud-compute-image
+@blurb gcloud-compute-image creates a Google Compute Engine image from a filesystem tarball on Google Cloud Storage.
 @status alpha
 @url https://github.com/proppy/gce-elements
 -->
-<polymer-element name="gce-image" attributes="name src">
+
+<polymer-element name="gcloud-compute-image" 
+  attributes="name src"
+  extends="gcloud-compute-base">
 
   <script>
-
     Polymer({
       /**
        * The `name` attribute is the name of the image resource.
@@ -151,11 +213,6 @@ gce-image creates a Google Compute Engine image.
        */
       src: '',
 
-      ready: function() {
-        this.gapi = document.querySelector('google-gapi');
-        this.gcloud = document.querySelector('gcloud-config');
-      },
-
       /**
        * The `go` method creates the Google Cloud Engine image.
        *
@@ -165,7 +222,7 @@ gce-image creates a Google Compute Engine image.
       go: function() {
         this.gapi.auth(function(result) {
           var payload = {
-            project: this.gcloud.project,
+            project: this.config.project,
             resource: {
               name: this.name,
               sourceType: 'RAW',
@@ -176,47 +233,35 @@ gce-image creates a Google Compute Engine image.
           };
           gapi.client.compute.images.insert(payload).execute(this.wait.bind(this));
         }.bind(this));
-      },
-
-      wait: function(result) {
-        console.log(result);
-        gapi.client.compute.globalOperations.get({
-          project: this.gcloud.project,
-          operation: result.name
-        }).execute(function(result) {
-          if (result.status != "DONE") {
-            this.async(this.wait, result, 1000);
-          } else {
-            this.fire('done', result);
-          }
-        }.bind(this));
-       }
+      }
     });
 
   </script>
 
 </polymer-element>
 <!--
-gce-instance creates a Google Compute Engine instance.
+gcloud-compute-instance creates a Google Compute Engine instance.
 
 ##### Example
 
     <google-gapi ...></google-gapi>
     <gcloud-config ...></gcloud-config>
-    <gce-instance id="instance-id" name="my-instance" zone="zone" type="type" disk_name="my_boot_disk" disk_image="my-image"></gce-disk>
+    <gcloud-compute-instance id="instance-id" name="my-instance" zone="zone" type="type" disk_name="my_boot_disk" disk_image="my-image"></gcloud-compute-disk>
     <script>
       document.querySelector('#my-disk').go(function(result) {
         console.log(result);
       });
     </script>
 
-@element gce-instance
-@blurb gce-instance creates a Google Compute Engine instance
+@element gcloud-compute-instance
+@blurb gcloud-compute-instance creates a Google Compute Engine instance
 @status alpha
 @url https://github.com/proppy/gce-elements
 -->
 
-<polymer-element name="gce-instance" attributes="name zone net_name disk_name disk_type disk_boot disk_autodel disk_size disk_image_project disk_image">
+<polymer-element name="gcloud-compute-instance" 
+  attributes="name zone net_name disk_name disk_type disk_boot disk_autodel disk_size disk_image_project disk_image"
+  extends="gcloud-compute-base">
 
   <script>
 
@@ -309,11 +354,6 @@ gce-instance creates a Google Compute Engine instance.
        */
       disk_image_project: '',
 
-      ready: function() {
-        this.gapi = document.querySelector('google-gapi');
-        this.gcloud = document.querySelector('gcloud-config');
-      },
-
       /**
        * The `go` method creates the Google Compute Engine disk.
        *
@@ -321,23 +361,20 @@ gce-instance creates a Google Compute Engine instance.
        * @return {Object} Returns undefined.
        */
       go: function() {
-        var API_VERSION = 'v1';
-        var BASE_URL = 'https://www.googleapis.com/compute/' + API_VERSION +
-                       '/projects/';
-        var DEFAULT_NETWORK = BASE_URL + this.gcloud.project + 
+        var DEFAULT_NETWORK = this.base_url + this.config.project + 
                               '/global/networks/default'
         this.gapi.auth(function(result) {
           var payload = {
-            project: this.gcloud.project,
+            project: this.config.project,
             name: this.name,
             zone: this.zone,
             resource: {
               name: this.name,
-              machineType: BASE_URL + this.gcloud.project + 
+              machineType: this.base_url + this.config.project + 
                            '/zones/' + this.zone + '/machineTypes/' + 
                            this.type,
               networkInterfaces: [{ 
-                                    network: BASE_URL + this.gcloud.project +
+                                    network: this.base_url + this.config.project +
                                              '/global/networks/' + 
                                              this.net_name,
                                     accessConfigs: [{type: 'ONE_TO_ONE_NAT'}]
@@ -349,7 +386,7 @@ gce-instance creates a Google Compute Engine instance.
                         initializeParams: {
                                             diskName: this.disk_name,
                                             diskSizeGb: this.disk_size,
-                                            sourceImage: BASE_URL + 
+                                            sourceImage: this.base_url + 
                                                          this.disk_image_project +
                                                          '/global/images/' + 
                                                          this.disk_image
@@ -360,21 +397,6 @@ gce-instance creates a Google Compute Engine instance.
           gapi.client.compute.instances.insert(payload).execute(this.wait.bind(this));
         }.bind(this));
       },
-
-      wait: function(result) {
-        console.log(result);
-        gapi.client.compute.zoneOperations.get({
-          operation: result.name,
-          project: this.gcloud.project,
-          zone: this.zone
-        }).execute(function(result) {
-          if (result.status != "DONE") {
-            this.async(this.wait, result, 1000);
-          } else {
-            this.fire('done', result);
-          }
-        }.bind(this));
-       }
     });
 
   </script>
