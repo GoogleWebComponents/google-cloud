@@ -62,8 +62,78 @@ not be directly specified by developers.
             this.fire('done', result);
           }
         }.bind(this));
-       }
+      }
+    });
+  <script>
+</polymer-element>
 
+<!--
+gcloud-compute-image creates a private Compute Engine image
+in the project configured by a gcloud-config element.
+
+##### Example
+
+  <google-gapi ...></google-gapi>
+  <gcloud-config ...></gcloud-config>
+  <gcloud-compute-image id="my-image" 
+    src="gs://my-bucket/my-filesystem.tar.gz">
+  </gcloud-compute-image>
+  <script>
+    document.querySelector('#my-image').go(function(result) {
+      console.log(result);
+    });
+  </script>
+
+@element gcloud-compute-image
+@blurb gcloud-compute-image creates a Google Compute Engine image from a Google Cloud Storage object.
+@status alpha
+@url https://github.com/GoogleWebComponents/google-gcloud
+-->
+
+<polymer-element name="gcloud-compute-image" 
+  attributes="name src"
+  extends="gcloud-compute-base">
+
+  <script>
+    Polymer({
+      /**
+       * 'name' is the name to assign the image.
+       * @attribute name
+       * @type string
+       */
+      name: '',
+
+      /**
+       * 'src' points to the Cloud Storage object to use
+       * as input for creating the image.
+       *
+       * @attribute src
+       * @type string
+       */
+      src: '',
+
+      /**
+       * The 'go' method creates the Google Cloud Engine image.
+       * @method go
+       * @return {Object} Returns undefined.
+       */
+      go: function() {
+        this.gapi.auth(function(result) {
+          var payload = {
+            project: this.config.project,
+            resource: {
+              name: this.name,
+              sourceType: 'RAW',
+              rawDisk: {
+                source: this.src
+              }
+            }
+          };
+          gapi.client.compute.images.insert(payload).execute(this.wait.bind(this));
+        }.bind(this));
+      }
+    });
+  </script>
 </polymer-element>
 
 <!--
@@ -172,150 +242,80 @@ specifying any attributes.
 </polymer-element>
 
 <!--
-gcloud-compute-image creates a Google Compute Engine image.
+gcloud-compute-instance creates a Compute Engine virtual 
+machine. Suitable defaults are chosen for all attributes 
+so that, in the simplest use case, you can create a disk 
+without specifying any attributes.
 
 ##### Example
 
     <google-gapi ...></google-gapi>
     <gcloud-config ...></gcloud-config>
-    <gcloud-compute-image id="my-image" src="gs://my-bucket/my-filesystem.tar.gz"></gcloud-compute-image>
+    <gcloud-compute-instance id="my-vm">
+    </gcloud-compute-disk>
     <script>
-      document.querySelector('#my-image').go(function(result) {
-        console.log(result);
-      });
-    </script>
-
-@element gcloud-compute-image
-@blurb gcloud-compute-image creates a Google Compute Engine image from a filesystem tarball on Google Cloud Storage.
-@status alpha
-@url https://github.com/proppy/gce-elements
--->
-
-<polymer-element name="gcloud-compute-image" 
-  attributes="name src"
-  extends="gcloud-compute-base">
-
-  <script>
-    Polymer({
-      /**
-       * The `name` attribute is the name of the image resource.
-       *
-       * @attribute name
-       * @type string
-       */
-      name: '',
-
-      /**
-       * The `src` attribute points to the image filesystem tarball on Google Cloud Storage.
-       *
-       * @attribute src
-       * @type string
-       */
-      src: '',
-
-      /**
-       * The `go` method creates the Google Cloud Engine image.
-       *
-       * @method go
-       * @return {Object} Returns undefined.
-       */
-      go: function() {
-        this.gapi.auth(function(result) {
-          var payload = {
-            project: this.config.project,
-            resource: {
-              name: this.name,
-              sourceType: 'RAW',
-              rawDisk: {
-                source: this.src
-              }
-            }
-          };
-          gapi.client.compute.images.insert(payload).execute(this.wait.bind(this));
-        }.bind(this));
-      }
-    });
-
-  </script>
-
-</polymer-element>
-<!--
-gcloud-compute-instance creates a Google Compute Engine instance.
-
-##### Example
-
-    <google-gapi ...></google-gapi>
-    <gcloud-config ...></gcloud-config>
-    <gcloud-compute-instance id="instance-id" name="my-instance" zone="zone" type="type" disk_name="my_boot_disk" disk_image="my-image"></gcloud-compute-disk>
-    <script>
-      document.querySelector('#my-disk').go(function(result) {
+      document.querySelector('#my-vm').go(function(result) {
         console.log(result);
       });
     </script>
 
 @element gcloud-compute-instance
-@blurb gcloud-compute-instance creates a Google Compute Engine instance
+@blurb gcloud-compute-instance creates a Compute Engine VM 
 @status alpha
-@url https://github.com/proppy/gce-elements
+@url https://github.com/GoogleWebComponents/google-gcloud
 -->
 
 <polymer-element name="gcloud-compute-instance" 
-  attributes="name zone net_name disk_name disk_type disk_boot disk_autodel disk_size disk_image_project disk_image"
+  attributes="name zone net_name disk_name disk_type disk_boot disk_autodel disk_size disk_image"
   extends="gcloud-compute-base">
 
   <script>
-
     Polymer({
       /**
-       * The `name` attribute is the name of the disk resource.
-       *
+       * 'name' is the name of the new virtual machine.
        * @attribute name
        * @type string
        */
-      name: '',
+      name: 'my-vm',
 
       /**
-       * The `zone` attribute is the name of the desired zone.
-       *
+       * 'zone' is the desired zone for the new VM.
        * @attribute zone
        * @type string
        */
       zone: 'us-central1-a',
 
       /**
-       * The `type` attribute is the name of the desired machine type.
-       *
+       * 'type' is the desired machine type.
        * @attribute type
        * @type string
        */
-      type: 'n1-standard-1',
+      type: 'f1-micro',
 
       /**
-       * The `net_name` attribute is the name of the desired network.
-       *
+       * 'net_name' is the desired network name.
        * @attribute net_name
        * @type string
        */
       net_name: 'default',
 
       /**
-       * The `disk_name` attribute is the name of the boot disk.
-       *
+       * 'disk_name' is the name to assign to the boot disk.
        * @attribute disk_name
        * @type string
        */
       disk_name: '',
 
       /**
-       * The `disk_type` attribute is the desired disk type.
-       *
+       * 'disk_type' is the desired type of the boot disk.
        * @attribute disk_type
        * @type string
        */
       disk_type: 'PERSISTENT',
 
       /**
-       * The `disk_boot` attribute is the desired boot state.
+       * 'disk_boot' is a boolean indicating whether the 
+       * disk should be bootable or not.
        *
        * @attribute disk_boot
        * @type string
@@ -323,7 +323,8 @@ gcloud-compute-instance creates a Google Compute Engine instance.
       disk_boot: true,
 
       /**
-       * The `disk_autodel` attribute is the desired disk auto-delete state.
+       * 'disk_autodel' indicates whether to automatically
+       * delete the boot disk whenever the VM is deleted.
        *
        * @attribute disk_autodel
        * @type string
@@ -331,74 +332,80 @@ gcloud-compute-instance creates a Google Compute Engine instance.
       disk_autodel: true,
 
       /**
-       * The `disk_size` attribute is the desired disk size (in GB).
-       *
+       * 'disk_size' is the desired disk capacity (in GB).
        * @attribute disk_size
        * @type string
        */
       disk_size: '10',
 
       /**
-       * The `disk_image` attribute is the desired disk image.
+       * 'disk_image' is the image to use for the boot disk.
+       * It may contain a ':', in which case the image
+       * string is assumed to contain a project and
+       * and image name with that project, e.g.,
+       *
+       *   debian-cloud:debian-7-wheezy-v20140606
+       *
+       * It's also acceptable to specify a null project
+       * with or without the colon, which assumes the
+       * desired image is to be taken from the project
+       * configured by the <gcloud-config> element.
        *
        * @attribute disk_image
        * @type string
        */
-      disk_image: '',
+      disk_image: 'debian-cloud:debian-7-wheezy-v20140606',
 
       /**
-       * The `disk_image_project` attribute is the project for the disk image.
-       *
-       * @attribute disk_image_project
-       * @type string
-       */
-      disk_image_project: '',
-
-      /**
-       * The `go` method creates the Google Compute Engine disk.
-       *
+       * The 'go' method creates the Compute Engine VM.
        * @method go
        * @return {Object} Returns undefined.
        */
       go: function() {
-        var DEFAULT_NETWORK = this.base_url + this.config.project + 
-                              '/global/networks/default'
         this.gapi.auth(function(result) {
+          var li = this.image.split(':');
+          var image_project = '';
+          var image_name = '';
+          if (li.length == 2) {
+            image_project = li[0]; 
+            image_name = li[1]; 
+          } else if (li.length == 1) {
+            image_project = this.config.project; 
+            image_name = li[0]; 
+          } else {
+            image_project = this.config.project; 
+            image_name = 'default'; 
+          }
           var payload = {
             project: this.config.project,
             name: this.name,
             zone: this.zone,
             resource: {
               name: this.name,
-              machineType: this.base_url + this.config.project + 
-                           '/zones/' + this.zone + '/machineTypes/' + 
-                           this.type,
+              machineType: this.base_url + 
+                this.config.project + '/zones/' + this.zone + 
+                '/machineTypes/' + this.type,
               networkInterfaces: [{ 
-                                    network: this.base_url + this.config.project +
-                                             '/global/networks/' + 
-                                             this.net_name,
-                                    accessConfigs: [{type: 'ONE_TO_ONE_NAT'}]
-                                  }],
+                network: this.base_url + this.config.project +
+                         '/global/networks/' + this.net_name,
+                accessConfigs: [{type: 'ONE_TO_ONE_NAT'}]
+              }],
               disks: [{
-                        type: this.disk_type,
-                        boot: this.disk_boot,
-                        autoDelete: this.disk_autodel,
-                        initializeParams: {
-                                            diskName: this.disk_name,
-                                            diskSizeGb: this.disk_size,
-                                            sourceImage: this.base_url + 
-                                                         this.disk_image_project +
-                                                         '/global/images/' + 
-                                                         this.disk_image
-                                          }
-                      }] 
+                type: this.disk_type,
+                boot: this.disk_boot,
+                autoDelete: this.disk_autodel,
+                initializeParams: {
+                  diskName: this.disk_name,
+                  diskSizeGb: this.disk_size,
+                  sourceImage: this.base_url + image_project + 
+                           '/global/images/' + image_name;
+                }
+              }] 
             }
           };
           gapi.client.compute.instances.insert(payload).execute(this.wait.bind(this));
         }.bind(this));
       },
     });
-
   </script>
-
 </polymer-element>
