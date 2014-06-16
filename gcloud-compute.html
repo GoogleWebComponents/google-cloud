@@ -16,10 +16,11 @@ not be directly specified by developers.
   attributes="scope"> 
 
   <script>
+    var API_VERSION = 'v1';
+
     Polymer({
-      api_version: 'v1',
       base_url: 'https://www.googleapis.com/compute/' + 
-                this.api_version + '/projects/',
+                API_VERSION + '/projects/',
 
       /**
        * 'scope' is the Compute Engine scope associated 
@@ -33,17 +34,21 @@ not be directly specified by developers.
       scope: 'global',
       
       ready: function() {
-        this.gapi = document.querySelector('google-gapi');
+        this.gapi = document.querySelector('gcloud-gapi');
         this.config = document.querySelector('gcloud-config');
-        if (scope == 'global') {
-          this.wait_func = 
-            gapi.client.compute.globalOperations;
-        } else if (scope == 'regional') {
-          this.wait_func = 
-            gapi.client.compute.regionOperations;
-        } else if (scope == 'zonal') {
-          this.wait_func = gapi.client.compute.zoneOperations;
+        //console.log('this.gapi', this.gapi, this.config);
+      },
+
+      get_wait_func: function() {
+        var wait_func = null;
+        if (this.scope == 'global') {
+          wait_func = gapi.client.compute.globalOperations;
+        } else if (this.scope == 'regional') {
+          wait_func = gapi.client.compute.regionOperations;
+        } else if (this.scope == 'zonal') {
+          wait_func = gapi.client.compute.zoneOperations;
         }
+        return wait_func;
       },
 
       wait: function(result) {
@@ -52,19 +57,19 @@ not be directly specified by developers.
           operation: result.name,
           project: this.config.project,
         }
-        if (scope == 'zonal') {
+        if (this.scope == 'zonal') {
           get_req['zone'] = this.zone;
         }
-        this.wait_func.get(get_req).execute(function(result) {
+        this.get_wait_func().get(get_req).execute(function(result) {
           if (result.status != "DONE") {
             this.async(this.wait, result, 1000);
           } else {
             this.fire('done', result);
           }
-        }.bind(this));
+        }.bind(this))
       }
     });
-  <script>
+  </script>
 </polymer-element>
 
 <!--
@@ -73,10 +78,10 @@ in the project configured by a gcloud-config element.
 
 ##### Example
 
-  <google-gapi ...></google-gapi>
+  <gcloud-gapi ...></gcloud-gapi>
   <gcloud-config ...></gcloud-config>
   <gcloud-compute-image id="my-image" 
-    src="gs://my-bucket/my-filesystem.tar.gz">
+    src="gs://my-bucket/my-object.tar.gz">
   </gcloud-compute-image>
   <script>
     document.querySelector('#my-image').go(function(result) {
@@ -144,7 +149,7 @@ specifying any attributes.
 
 ##### Example
 
-  <google-gapi ...></google-gapi>
+  <gcloud-gapi ...></gcloud-gapi>
   <gcloud-config ...></gcloud-config>
   <gcloud-compute-disk id="my-disk"></gcloud-compute-disk>
   <script>
@@ -165,6 +170,9 @@ specifying any attributes.
 
   <script>
     Polymer({
+      // Force zonal scope in base element.
+      scope: 'zonal',
+
       /**
        * 'name' is the name to assign to the new disk.
        * @attribute name
@@ -231,7 +239,7 @@ specifying any attributes.
               name: this.name,
               sizeGb: this.size,
               sourceImage: this.base_url + image_project + 
-                           '/global/images/' + image_name;
+                           '/global/images/' + image_name
             }
           };
           gapi.client.compute.disks.insert(payload).execute(this.wait.bind(this));
@@ -249,7 +257,7 @@ without specifying any attributes.
 
 ##### Example
 
-    <google-gapi ...></google-gapi>
+    <gcloud-gapi ...></gcloud-gapi>
     <gcloud-config ...></gcloud-config>
     <gcloud-compute-instance id="my-vm">
     </gcloud-compute-disk>
@@ -271,6 +279,9 @@ without specifying any attributes.
 
   <script>
     Polymer({
+      // Force zonal scope in base element.
+      scope: 'zonal',
+
       /**
        * 'name' is the name of the new virtual machine.
        * @attribute name
@@ -363,7 +374,7 @@ without specifying any attributes.
        */
       go: function() {
         this.gapi.auth(function(result) {
-          var li = this.image.split(':');
+          var li = this.disk_image.split(':');
           var image_project = '';
           var image_name = '';
           if (li.length == 2) {
@@ -375,6 +386,9 @@ without specifying any attributes.
           } else {
             image_project = this.config.project; 
             image_name = 'default'; 
+          }
+          if (!this.disk_name) {
+            this.disk_name = this.name;
           }
           var payload = {
             project: this.config.project,
@@ -398,7 +412,7 @@ without specifying any attributes.
                   diskName: this.disk_name,
                   diskSizeGb: this.disk_size,
                   sourceImage: this.base_url + image_project + 
-                           '/global/images/' + image_name;
+                           '/global/images/' + image_name
                 }
               }] 
             }
