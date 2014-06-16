@@ -1,22 +1,30 @@
 <!--
+  This file contains a collection of product specific
+  components for interacting with Google Compute Engine,
+  organized under the gcloud-compute namespace.
+-->
+
+<!--
+
 gce-disk creates a Google Compute Engine disk.
 
 ##### Example
 
-    <google-gapi ...></google-gapi>
-    <gcloud-config ...></gcloud-config>
-    <gce-disk id="my-disk" name="my-name" zone="zone" image="my-image"></gce-disk>
-    <script>
-      document.querySelector('#my-disk').go(function(result) {
-        console.log(result);
-      });
-    </script>
+  <google-gapi ...></google-gapi>
+  <gcloud-config ...></gcloud-config>
+  <gce-disk id="my-disk" name="my-name" zone="zone" image="my-image"></gce-disk>
+  <script>
+    document.querySelector('#my-disk').go(function(result) {
+      console.log(result);
+    });
+  </script>
 
 @element gce-disk
 @blurb gce-disk creates a Google Compute Engine disk from an image 
 @status alpha
 @url https://github.com/proppy/gce-elements
 -->
+
 <polymer-element name="gce-disk" attributes="name zone size image">
 
   <script>
