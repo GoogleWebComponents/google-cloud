@@ -10,7 +10,7 @@ products and APIs so it's important to establish a clear and
 consistent naming scheme for the associated components. 
 We will following the naming scheme implemented by the 
 [Google Cloud SDK](https://developers.google.com/cloud/sdk/), 
-which has estblished a well defined naming scheme for a
+which has established a well defined naming scheme for a
 collection of commands and subcommands for requesting GCP 
 services.
 
