@@ -14,9 +14,14 @@ not be directly specified by developers.
 
 <polymer-element name="gcloud-compute-base" attributes="scope">
 
+  <link rel="stylesheet" href="google-gcloud.css">
+
   <template>
-    <span style="display:inline-block; border:7px solid {{border_color}};">
-      <span style="display:inline-block; border:3px solid white">
+    <style>
+      .iblock { display: inline-block; }
+    </style>
+    <span class="iblock" style="border:7px solid {{border_color}};">
+      <span class="iblock" style="border:3px solid white">
         <content></content>
       </span>
     </span>
@@ -26,6 +31,14 @@ not be directly specified by developers.
     var API_VERSION = 'v1';
 
     Polymer({
+
+     /**
+       * The `author` attribute sets an initial author
+       * 
+       * @attribute author
+       * @type string
+       */
+      author: 'Marc Cohen',
 
       border_color: 'red',
 
