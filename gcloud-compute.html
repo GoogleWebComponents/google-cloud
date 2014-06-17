@@ -12,13 +12,23 @@ internal use within this component collection - it should
 not be directly specified by developers.
 -->
 
-<polymer-element name="gcloud-compute-base" 
-  attributes="scope"> 
+<polymer-element name="gcloud-compute-base" attributes="scope">
+
+  <template>
+    <span style="display:inline-block; border:8px solid {{border_color}}">
+      <span style="display:inline-block; border:3px solid white">
+        <content></content>
+      </span>
+    </span>
+  </template>
 
   <script>
     var API_VERSION = 'v1';
 
     Polymer({
+
+      border_color: 'red',
+
       base_url: 'https://www.googleapis.com/compute/' + 
                 API_VERSION + '/projects/',
 
@@ -36,7 +46,6 @@ not be directly specified by developers.
       ready: function() {
         this.gapi = document.querySelector('gcloud-gapi');
         this.config = document.querySelector('gcloud-config');
-        //console.log('this.gapi', this.gapi, this.config);
       },
 
       get_wait_func: function() {
@@ -64,7 +73,7 @@ not be directly specified by developers.
           if (result.status != "DONE") {
             this.async(this.wait, result, 1000);
           } else {
-            this.fire('done', result);
+            this.fire('done', this.name);
           }
         }.bind(this))
       }
@@ -83,11 +92,6 @@ in the project configured by a gcloud-config element.
   <gcloud-compute-image id="my-image" 
     src="gs://my-bucket/my-object.tar.gz">
   </gcloud-compute-image>
-  <script>
-    document.querySelector('#my-image').go(function(result) {
-      console.log(result);
-    });
-  </script>
 
 @element gcloud-compute-image
 @blurb gcloud-compute-image creates a Google Compute Engine image from a Google Cloud Storage object.
@@ -152,11 +156,6 @@ specifying any attributes.
   <gcloud-gapi ...></gcloud-gapi>
   <gcloud-config ...></gcloud-config>
   <gcloud-compute-disk id="my-disk"></gcloud-compute-disk>
-  <script>
-    document.querySelector('#my-disk').go(function(result) {
-      console.log(result);
-    });
-  </script>
 
 @element gcloud-compute-disk
 @blurb gcloud-compute-disk creates a Google Compute Engine disk
@@ -259,13 +258,8 @@ without specifying any attributes.
 
     <gcloud-gapi ...></gcloud-gapi>
     <gcloud-config ...></gcloud-config>
-    <gcloud-compute-instance id="my-vm">
+    <gcloud-compute-instance id="my-vm">my-vm
     </gcloud-compute-disk>
-    <script>
-      document.querySelector('#my-vm').go(function(result) {
-        console.log(result);
-      });
-    </script>
 
 @element gcloud-compute-instance
 @blurb gcloud-compute-instance creates a Compute Engine VM 
@@ -279,6 +273,10 @@ without specifying any attributes.
 
   <script>
     Polymer({
+      // Element state must be one of:
+      // 'init', 'starting', 'started', 'stopping'
+      state: 'init',
+
       // Force zonal scope in base element.
       scope: 'zonal',
 
@@ -368,56 +366,119 @@ without specifying any attributes.
       disk_image: 'debian-cloud:debian-7-wheezy-v20140606',
 
       /**
+       * The 'gen_instance_payload' method generates a
+       * json payload for inserting an instance.
+       *
+       * @method gen_instance_payload
+       * @return {Object} Returns a JSON object.
+       */
+      gen_instance_payload: function() {
+        var li = this.disk_image.split(':');
+        var image_project = '';
+        var image_name = '';
+        if (li.length == 2) {
+          image_project = li[0]; 
+          image_name = li[1]; 
+        } else if (li.length == 1) {
+          image_project = this.config.project; 
+          image_name = li[0]; 
+        } else {
+          image_project = this.config.project; 
+          image_name = 'default'; 
+        }
+        if (!this.disk_name) {
+          this.disk_name = this.name;
+        }
+        var payload = {
+          project: this.config.project,
+          name: this.name,
+          zone: this.zone,
+          resource: {
+            name: this.name,
+            machineType: this.base_url + 
+              this.config.project + '/zones/' + this.zone + 
+              '/machineTypes/' + this.type,
+            networkInterfaces: [{ 
+              network: this.base_url + this.config.project +
+                       '/global/networks/' + this.net_name,
+              accessConfigs: [{type: 'ONE_TO_ONE_NAT'}]
+            }],
+            disks: [{
+              type: this.disk_type,
+              boot: this.disk_boot,
+              autoDelete: this.disk_autodel,
+              initializeParams: {
+                diskName: this.disk_name,
+                diskSizeGb: this.disk_size,
+                sourceImage: this.base_url + image_project + 
+                             '/global/images/' + image_name
+              }
+            }] 
+          }
+        };
+        return payload;
+      },
+
+      /**
+       * The 'progress' method displays or removes a 
+       * progress indicator and updates the border color
+       * for the contained content, as a function of the
+       * current state.
+       *
+       * @method progress
+       * @return {Object} Returns undefined.
+       */
+      progress: function() {
+        if (this.state == 'init' || this.state == 'started') {
+          // Remove progress indicator.
+          var prog = 
+            document.querySelector('#prog-' + this.name);
+          this.parentNode.removeChild(prog);
+          if (this.state == 'init') {
+            this.border_color = 'red';
+          } else {
+            this.border_color = 'green';
+          }
+        } else {
+          // Insert progress indicator.
+          var prog = document.createElement('progress');
+          prog.id = 'prog-' + this.name;
+          this.parentNode.appendChild(prog);
+          this.border_color = 'gray';
+        }
+      },
+
+      /**
        * The 'go' method creates the Compute Engine VM.
        * @method go
        * @return {Object} Returns undefined.
        */
       go: function() {
         this.gapi.auth(function(result) {
-          var li = this.disk_image.split(':');
-          var image_project = '';
-          var image_name = '';
-          if (li.length == 2) {
-            image_project = li[0]; 
-            image_name = li[1]; 
-          } else if (li.length == 1) {
-            image_project = this.config.project; 
-            image_name = li[0]; 
-          } else {
-            image_project = this.config.project; 
-            image_name = 'default'; 
+          this.addEventListener('done', function(e) {
+            if (this.state == 'starting') {
+              this.state = 'started';
+            } else if (this.state == 'stopping') {
+              this.state = 'init';
+            } 
+            this.progress();
+          });
+          if (this.state == 'started') {
+            this.state = 'stopping';
+            this.progress();
+
+            var payload = {
+              project: this.config.project,
+              instance: this.name,
+              zone: this.zone,
+            };
+            gapi.client.compute.instances.delete(payload).execute(this.wait.bind(this));
+          } else  if (this.state == 'init') {
+            this.state = 'starting';
+            this.progress();
+            var payload = this.gen_instance_payload();
+            gapi.client.compute.instances.insert(payload).execute(this.wait.bind(this));
           }
-          if (!this.disk_name) {
-            this.disk_name = this.name;
-          }
-          var payload = {
-            project: this.config.project,
-            name: this.name,
-            zone: this.zone,
-            resource: {
-              name: this.name,
-              machineType: this.base_url + 
-                this.config.project + '/zones/' + this.zone + 
-                '/machineTypes/' + this.type,
-              networkInterfaces: [{ 
-                network: this.base_url + this.config.project +
-                         '/global/networks/' + this.net_name,
-                accessConfigs: [{type: 'ONE_TO_ONE_NAT'}]
-              }],
-              disks: [{
-                type: this.disk_type,
-                boot: this.disk_boot,
-                autoDelete: this.disk_autodel,
-                initializeParams: {
-                  diskName: this.disk_name,
-                  diskSizeGb: this.disk_size,
-                  sourceImage: this.base_url + image_project + 
-                           '/global/images/' + image_name
-                }
-              }] 
-            }
-          };
-          gapi.client.compute.instances.insert(payload).execute(this.wait.bind(this));
         }.bind(this));
       },
     });
