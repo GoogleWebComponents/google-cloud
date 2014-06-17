@@ -1,0 +1,23 @@
+<!doctype html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <script src="../platform/platform.js"></script>
+  <link rel="import" href="../polymer/polymer.html">
+  <link rel="import" href="gcloud-config.html">
+  <link rel="import" href="gcloud-gapi.html">
+  <link rel="import" href="gcloud-compute.html">
+  </style>
+</head>
+<body>
+
+    <gcloud-gapi client_id="996714972814-6ha431p6bp12kloin1fqvug4p38aipnp@developer.gserviceaccount.com" scopes="https://www.googleapis.com/auth/compute" apis="compute@v1"></gcloud-gapi>
+
+    <gcloud-config project="marc-general"></gcloud-config>
+
+    <gcloud-compute-instance id="my-vm" diskImage="google-containers:container-vm-v20140522" onclick="this.go()">
+      <img src="img/vm.png" height="70" width="70"></img>
+    </gcloud-compute-instance>
+
+</body>
+</html>
