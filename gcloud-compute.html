@@ -53,6 +53,7 @@ not be directly specified by developers.
        *
        * @attribute scope
        * @type string
+       * @default 'global'
        */
       scope: 'global',
       
@@ -189,6 +190,7 @@ specifying any attributes.
        * 'name' is the name to assign to the new disk.
        * @attribute name
        * @type string
+       * @default 'my-disk'
        */
       name: 'my-disk',
 
@@ -196,6 +198,7 @@ specifying any attributes.
        * 'zone' is the desired location for the new disk.
        * @attribute zone
        * @type string
+       * @default 'us-central1-a'
        */
       zone: 'us-central1-a',
 
@@ -203,6 +206,7 @@ specifying any attributes.
        * 'size' is the capacity (in GB) for the new disk.
        * @attribute size
        * @type integer 
+       * @default '10'
        */
       size: 10,
 
@@ -221,6 +225,7 @@ specifying any attributes.
        *
        * @attribute image
        * @type string
+       * @default 'debian-cloud:debian-7-wheezy-v20140606'
        */
       image: 'debian-cloud:debian-7-wheezy-v20140606',
 
@@ -281,7 +286,7 @@ without specifying any attributes.
 -->
 
 <polymer-element name="gcloud-compute-instance" 
-  attributes="name zone net_name disk_name disk_type disk_boot disk_autodel disk_size disk_image"
+  attributes="name zone netName diskName diskType diskBoot diskAutodel diskSize diskImage"
   extends="gcloud-compute-base">
 
   <script>
@@ -297,6 +302,7 @@ without specifying any attributes.
        * 'name' is the name of the new virtual machine.
        * @attribute name
        * @type string
+       * @default 'my-vm'
        */
       name: 'my-vm',
 
@@ -304,6 +310,7 @@ without specifying any attributes.
        * 'zone' is the desired zone for the new VM.
        * @attribute zone
        * @type string
+       * @default 'us-central1-a'
        */
       zone: 'us-central1-a',
 
@@ -311,57 +318,64 @@ without specifying any attributes.
        * 'type' is the desired machine type.
        * @attribute type
        * @type string
+       * @default 'f1-micro'
        */
       type: 'f1-micro',
 
       /**
-       * 'net_name' is the desired network name.
-       * @attribute net_name
+       * 'netName' is the desired network name.
+       * @attribute netName
        * @type string
+       * @default 'default'
        */
-      net_name: 'default',
+      netName: 'default',
 
       /**
-       * 'disk_name' is the name to assign to the boot disk.
-       * @attribute disk_name
+       * 'diskName' is the name to assign to the boot disk.
+       * @attribute diskName
        * @type string
+       * @default 'same as VM name'
        */
-      disk_name: '',
+      diskName: '',
 
       /**
-       * 'disk_type' is the desired type of the boot disk.
-       * @attribute disk_type
+       * 'diskType' is the desired type of the boot disk.
+       * @attribute diskType
        * @type string
+       * @default 'PERSISTENT'
        */
-      disk_type: 'PERSISTENT',
+      diskType: 'PERSISTENT',
 
       /**
-       * 'disk_boot' is a boolean indicating whether the 
+       * 'diskBoot' is a boolean indicating whether the 
        * disk should be bootable or not.
        *
-       * @attribute disk_boot
+       * @attribute diskBoot
        * @type string
+       * @default 'true'
        */
-      disk_boot: true,
+      diskBoot: true,
 
       /**
-       * 'disk_autodel' indicates whether to automatically
+       * 'diskAutodel' indicates whether to automatically
        * delete the boot disk whenever the VM is deleted.
        *
-       * @attribute disk_autodel
+       * @attribute diskAutodel
        * @type string
+       * @default 'true'
        */
-      disk_autodel: true,
+      diskAutodel: true,
 
       /**
-       * 'disk_size' is the desired disk capacity (in GB).
-       * @attribute disk_size
+       * 'diskSize' is the desired disk capacity (in GB).
+       * @attribute diskSize
        * @type string
+       * @default '10'
        */
-      disk_size: '10',
+      diskSize: '10',
 
       /**
-       * 'disk_image' is the image to use for the boot disk.
+       * 'diskImage' is the image to use for the boot disk.
        * It may contain a ':', in which case the image
        * string is assumed to contain a project and
        * and image name with that project, e.g.,
@@ -373,10 +387,11 @@ without specifying any attributes.
        * desired image is to be taken from the project
        * configured by the <gcloud-config> element.
        *
-       * @attribute disk_image
+       * @attribute diskImage
        * @type string
+       * @default 'debian-cloud:debian-7-wheezy-v20140606'
        */
-      disk_image: 'debian-cloud:debian-7-wheezy-v20140606',
+      diskImage: 'debian-cloud:debian-7-wheezy-v20140606',
 
       /**
        * The 'gen_instance_payload' method generates a
@@ -386,7 +401,7 @@ without specifying any attributes.
        * @return {Object} Returns a JSON object.
        */
       gen_instance_payload: function() {
-        var li = this.disk_image.split(':');
+        var li = this.diskImage.split(':');
         var image_project = '';
         var image_name = '';
         if (li.length == 2) {
@@ -399,8 +414,8 @@ without specifying any attributes.
           image_project = this.config.project; 
           image_name = 'default'; 
         }
-        if (!this.disk_name) {
-          this.disk_name = this.name;
+        if (!this.diskName) {
+          this.diskName = this.name;
         }
         var payload = {
           project: this.config.project,
@@ -413,16 +428,16 @@ without specifying any attributes.
               '/machineTypes/' + this.type,
             networkInterfaces: [{ 
               network: this.base_url + this.config.project +
-                       '/global/networks/' + this.net_name,
+                       '/global/networks/' + this.netName,
               accessConfigs: [{type: 'ONE_TO_ONE_NAT'}]
             }],
             disks: [{
-              type: this.disk_type,
-              boot: this.disk_boot,
-              autoDelete: this.disk_autodel,
+              type: this.diskType,
+              boot: this.diskBoot,
+              autoDelete: this.diskAutodel,
               initializeParams: {
-                diskName: this.disk_name,
-                diskSizeGb: this.disk_size,
+                diskName: this.diskName,
+                diskSizeGb: this.diskSize,
                 sourceImage: this.base_url + image_project + 
                              '/global/images/' + image_name
               }

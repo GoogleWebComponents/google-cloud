@@ -11,11 +11,11 @@
 </head>
 <body>
 
-    <gcloud-gapi client_id="996714972814-6ha431p6bp12kloin1fqvug4p38aipnp@developer.gserviceaccount.com" scopes="https://www.googleapis.com/auth/compute" apis="compute@v1"></gcloud-gapi>
+    <gcloud-gapi client_id="your_client_id" scopes="https://www.googleapis.com/auth/compute" apis="compute@v1"></gcloud-gapi>
 
-    <gcloud-config project="marc-general"></gcloud-config>
+    <gcloud-config project="your_project_id"></gcloud-config>
 
-    <gcloud-compute-instance id="my-vm" disk_image="google-containers:container-vm-v20140522" onclick="this.go()">
+    <gcloud-compute-instance id="my-vm" diskImage="google-containers:container-vm-v20140522" onclick="this.go()">
       <img src="img/vm.png" height="70" width="70"></img>
     </gcloud-compute-instance>
 
