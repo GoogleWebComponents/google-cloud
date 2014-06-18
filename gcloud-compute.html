@@ -286,7 +286,7 @@ without specifying any attributes.
 -->
 
 <polymer-element name="gcloud-compute-instance" 
-  attributes="name zone netName diskName diskType diskBoot diskAutodel diskSize diskImage"
+  attributes="name zone metadata netName diskName diskType diskBoot diskAutodel diskSize diskImage"
   extends="gcloud-compute-base">
 
   <script>
@@ -321,6 +321,17 @@ without specifying any attributes.
        * @default 'f1-micro'
        */
       type: 'f1-micro',
+
+      /**
+       * 'metadata' is a desired key/value pair of metadata to send to the new VM.
+       * Following the convention established by the gcloud compute command line,
+       * the key/value pair are expected to be delineated by an '=' character.
+       *
+       * @attribute metadata
+       * @type string
+       * @default ''
+       */
+      metadata: '',
 
       /**
        * 'netName' is the desired network name.
@@ -444,6 +455,13 @@ without specifying any attributes.
             }] 
           }
         };
+        if (this.metadata) {
+          payload.resource.metadata =  {
+            'kind': 'compute#metadata',
+            'items': JSON.parse(this.metadata),
+          }
+        };
+        console.log('payload', payload);
         return payload;
       },
 

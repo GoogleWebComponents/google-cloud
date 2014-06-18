@@ -10,14 +10,13 @@
   </style>
 </head>
 <body>
-
-    <gcloud-gapi client_id="your_client_id" scopes="https://www.googleapis.com/auth/compute" apis="compute@v1"></gcloud-gapi>
-
-    <gcloud-config project="your_project_id"></gcloud-config>
-
-    <gcloud-compute-instance id="my-vm" diskImage="google-containers:container-vm-v20140522" onclick="this.go()">
+    <gcloud-gapi client_id="YOUR_CLIENT_ID" scopes="https://www.googleapis.com/auth/compute" apis="compute@v1"></gcloud-gapi>
+    <gcloud-config project="YOUR_PROJECT_ID"></gcloud-config>
+    <gcloud-compute-instance id="codelab-vm1" name="codelab-vm" 
+        diskImage="google-containers:container-vm-v20140522" 
+        metadata="[{&quot;key&quot;: &quot;google-container-manifest&quot;, &quot;value&quot;: &quot;version: v1beta1\ncontainers:\n- name: nodejs-hello\n  image: google/nodejs-hello\n  ports:\n    - name: port8080\n      hostPort: 8080\n      containerPort: 8080\n&quot;}]" 
+        onclick="this.go()">
       <img src="img/vm.png" height="70" width="70"></img>
     </gcloud-compute-instance>
-
 </body>
 </html>
