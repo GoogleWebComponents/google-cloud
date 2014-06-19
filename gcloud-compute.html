@@ -4,6 +4,8 @@
   organized under the gcloud-compute namespace.
 -->
 
+<link rel="import" href="../polymer/polymer.html">
+
 <!--
 gcloud-compute-base is a base element containing common
 data and behavior to be inherited by other components 
@@ -13,85 +15,92 @@ not be directly specified by developers.
 -->
 
 <polymer-element name="gcloud-compute-base" attributes="scope">
-
+  
   <link rel="stylesheet" href="google-gcloud.css">
 
   <template>
     <style>
       .iblock { display: inline-block; }
+      .progress { visibility: {{progressDisplay}}; }
     </style>
-    <span class="iblock" style="border:7px solid {{border_color}};">
+    <span class="iblock" style="border:7px solid {{borderColor}};">
       <span class="iblock" style="border:3px solid white">
         <content></content>
       </span>
     </span>
+    <progress class="progress"></progress>
   </template>
 
   <script>
-    var API_VERSION = 'v1';
+    (function() {
+      // Run once. Private and static to the element.
+      var API_VERSION = 'v1';
 
-    Polymer({
+      Polymer({
 
-     /**
-       * The `author` attribute sets an initial author
-       * 
-       * @attribute author
-       * @type string
-       */
-      author: 'Marc Cohen',
+       /**
+         * The `author` attribute sets an initial author
+         * 
+         * @attribute author
+         * @type string
+         */
+        author: 'Marc Cohen',
 
-      border_color: 'red',
+        borderColor: 'red',
 
-      base_url: 'https://www.googleapis.com/compute/' + 
-                API_VERSION + '/projects/',
+        progressDisplay: 'hidden',
 
-      /**
-       * 'scope' is the Compute Engine scope associated 
-       * with a given resource. In practical terms, if will
-       * be a string taken from the following set of values:
-       * 'global', 'regional', 'zonal'
-       *
-       * @attribute scope
-       * @type string
-       * @default 'global'
-       */
-      scope: 'global',
-      
-      ready: function() {
-        this.gapi = document.querySelector('gcloud-gapi');
-        this.config = document.querySelector('gcloud-config');
-      },
+        baseUrl: 'https://www.googleapis.com/compute/' + 
+                 API_VERSION + '/projects/',
 
-      get_wait_func: function() {
-        var wait_func = null;
-        if (this.scope == 'global') {
-          wait_func = gapi.client.compute.globalOperations;
-        } else if (this.scope == 'regional') {
-          wait_func = gapi.client.compute.regionOperations;
-        } else if (this.scope == 'zonal') {
-          wait_func = gapi.client.compute.zoneOperations;
-        }
-        return wait_func;
-      },
+        /**
+         * 'scope' is the Compute Engine scope associated 
+         * with a given resource. In practical terms, if will
+         * be a string taken from the following set of values:
+         * 'global', 'regional', 'zonal'
+         *
+         * @attribute scope
+         * @type string
+         * @default 'global'
+         */
+        scope: 'global',
 
-      wait: function(result) {
-        console.log(result);
-        var get_req = {
-          operation: result.name,
-          project: this.config.project,
-        }
-        if (this.scope == 'zonal') {
-          get_req['zone'] = this.zone;
-        }
-        this.get_wait_func().get(get_req).execute(function(result) {
-          if (result.status != "DONE") {
-            this.async(this.wait, result, 1000);
-          } else {
-            this.fire('done', this.name);
+        ready: function() {
+          this.gapi = document.querySelector('gcloud-gapi');
+          this.config = document.querySelector('gcloud-config');
+        },
+
+        getWaitFunc: function() {
+          var wait_func = null;
+          if (this.scope == 'global') {
+            wait_func = gapi.client.compute.globalOperations;
+          } else if (this.scope == 'regional') {
+            wait_func = gapi.client.compute.regionOperations;
+          } else if (this.scope == 'zonal') {
+            wait_func = gapi.client.compute.zoneOperations;
           }
-        }.bind(this))
-      }
-    });
+          return wait_func;
+        },
+
+        wait: function(result) {
+          console.log(result);
+          var get_req = {
+            operation: result.name,
+            project: this.config.project,
+          }
+          if (this.scope == 'zonal') {
+            get_req['zone'] = this.zone;
+          }
+          this.getWaitFunc().get(get_req).execute(function(result) {
+            if (result.status != "DONE") {
+              this.async(this.wait, result, 1000);
+            } else {
+              this.fire('done', this.name);
+            }
+          }.bind(this))
+        }
+      });
+    })();
   </script>
 </polymer-element>
 
@@ -255,7 +264,7 @@ specifying any attributes.
             resource: {
               name: this.name,
               sizeGb: this.size,
-              sourceImage: this.base_url + image_project + 
+              sourceImage: this.baseUrl + image_project + 
                            '/global/images/' + image_name
             }
           };
@@ -274,10 +283,27 @@ without specifying any attributes.
 
 ##### Example
 
+    Simple use case, wrapping text name and taking all defaults...
+
     <gcloud-gapi ...></gcloud-gapi>
     <gcloud-config ...></gcloud-config>
-    <gcloud-compute-instance id="my-vm">my-vm
-    </gcloud-compute-disk>
+    <gcloud-compute-instance onclick="this.go()">my-vm</gcloud-compute-instance> 
+
+    More involved example, wrapping an image and specifying a desired boot
+    image via the image attribute. This example also requests that the VM
+    be started in the europe-west1 zone, and specifies some metadata
+    to be consumed by the new VM via the metadata attribute...
+
+    <gcloud-gapi ...></gcloud-gapi>
+    <gcloud-config ...></gcloud-config>
+    <gcloud-compute-instance id="codelab-vm" name="codelab-vm"
+        type="n1-standard-1"
+        zone="europe-west-1" 
+        diskImage="google-containers:container-vm-v20140522"
+        metadata='[{"key": "google-container-manifest", "value": "version: v1beta1\ncontainers:\n- name: nodejs-hello\n  image: google/nodejs-hello\n  ports:\n    - name: port8080\n      hostPort: 8080\n      containerPort: 8080\n"}]'
+        onclick="this.go()">
+      <img src="img/vm.png" height="70" width="70"></img>
+    </gcloud-compute-instance>
 
 @element gcloud-compute-instance
 @blurb gcloud-compute-instance creates a Compute Engine VM 
@@ -380,10 +406,10 @@ without specifying any attributes.
       /**
        * 'diskSize' is the desired disk capacity (in GB).
        * @attribute diskSize
-       * @type string
-       * @default '10'
+       * @type int
+       * @default 10
        */
-      diskSize: '10',
+      diskSize: 10,
 
       /**
        * 'diskImage' is the image to use for the boot disk.
@@ -405,13 +431,13 @@ without specifying any attributes.
       diskImage: 'debian-cloud:debian-7-wheezy-v20140606',
 
       /**
-       * The 'gen_instance_payload' method generates a
+       * The 'genInstancePayload' method generates a
        * json payload for inserting an instance.
        *
-       * @method gen_instance_payload
+       * @method genInstancePayload
        * @return {Object} Returns a JSON object.
        */
-      gen_instance_payload: function() {
+      genInstancePayload: function() {
         var li = this.diskImage.split(':');
         var image_project = '';
         var image_name = '';
@@ -434,11 +460,11 @@ without specifying any attributes.
           zone: this.zone,
           resource: {
             name: this.name,
-            machineType: this.base_url + 
+            machineType: this.baseUrl + 
               this.config.project + '/zones/' + this.zone + 
               '/machineTypes/' + this.type,
             networkInterfaces: [{ 
-              network: this.base_url + this.config.project +
+              network: this.baseUrl + this.config.project +
                        '/global/networks/' + this.netName,
               accessConfigs: [{type: 'ONE_TO_ONE_NAT'}]
             }],
@@ -449,7 +475,7 @@ without specifying any attributes.
               initializeParams: {
                 diskName: this.diskName,
                 diskSizeGb: this.diskSize,
-                sourceImage: this.base_url + image_project + 
+                sourceImage: this.baseUrl + image_project + 
                              '/global/images/' + image_name
               }
             }] 
@@ -476,21 +502,17 @@ without specifying any attributes.
        */
       progress: function() {
         if (this.state == 'init' || this.state == 'started') {
-          // Remove progress indicator.
-          var prog = 
-            document.querySelector('#prog-' + this.name);
-          this.parentNode.removeChild(prog);
+          // Hide progress indicator.
+          this.progressDisplay = 'hidden';
           if (this.state == 'init') {
-            this.border_color = 'red';
+            this.borderColor = 'red';
           } else {
-            this.border_color = 'green';
+            this.borderColor = 'green';
           }
         } else {
-          // Insert progress indicator.
-          var prog = document.createElement('progress');
-          prog.id = 'prog-' + this.name;
-          this.parentNode.appendChild(prog);
-          this.border_color = 'gray';
+          // Display progress indicator.
+          this.progressDisplay = 'inline';
+          this.borderColor = 'gray';
         }
       },
 
@@ -519,14 +541,14 @@ without specifying any attributes.
               zone: this.zone,
             };
             gapi.client.compute.instances.delete(payload).execute(this.wait.bind(this));
-          } else  if (this.state == 'init') {
+          } else if (this.state == 'init') {
             this.state = 'starting';
             this.progress();
-            var payload = this.gen_instance_payload();
+            var payload = this.genInstancePayload();
             gapi.client.compute.instances.insert(payload).execute(this.wait.bind(this));
           }
         }.bind(this));
-      },
+      }
     });
   </script>
 </polymer-element>

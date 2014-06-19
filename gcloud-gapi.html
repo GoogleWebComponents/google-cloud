@@ -5,18 +5,14 @@ library for Google Cloud Platform (gcloud) Polymer components.
 ##### Example
 
   <gcloud-gapi client_id="my-client-id" scope="https://www.googleapis.com/auth/compute" apis="compute@v1"></gcloud-gapi>
-  <script>
-    var gapi = document.querySelector('gcloud-gapi');
-    gapi.auth(function(result) {
-      gapi.client.compute.instances.insert(...).execute(...);
-    });
-  </script>
 
 @element gcloud-gapi
 @blurb gcloud-gapi provides access to the Google JavaScript client library for Google Cloud Platform (gcloud) Polymer components.
 @status alpha
 @url https://github.com/GoogleWebComponents/google-gcloud
 -->
+
+<link rel="import" href="../polymer/polymer.html">
 
 <polymer-element name="gcloud-gapi" attributes="client_id scopes apis">
   <template>
