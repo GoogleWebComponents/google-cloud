@@ -2,7 +2,6 @@
   "name": "gce-elements",
   "private": false,
   "dependencies": {
-    "polymer": "~0.3.2",
-    "core-elements": "Polymer/core-elements#~0.3.2"
+    "core-elements": "Polymer/core-elements#~0.3.3"
   }
 }
