@@ -1,28 +1,28 @@
 <!--
-gcloud-gapi provides access to the Google JavaScript client 
-library for Google Cloud Platform (gcloud) Polymer components.
+google-cloud-gapi provides access to the Google JavaScript client 
+library for Google Cloud Platform (google-cloud) Polymer components.
 
 ##### Example
 
-  <gcloud-gapi client_id="my-client-id" scope="https://www.googleapis.com/auth/compute" apis="compute@v1"></gcloud-gapi>
+  <google-cloud-gapi client_id="my-client-id" scope="https://www.googleapis.com/auth/compute" apis="compute@v1"></google-cloud-gapi>
 
-@element gcloud-gapi
-@blurb gcloud-gapi provides access to the Google JavaScript client library for Google Cloud Platform (gcloud) Polymer components.
+@element google-cloud-gapi
+@blurb google-cloud-gapi provides access to the Google JavaScript client library for Google Cloud Platform (google-cloud) Polymer components.
 @status alpha
-@url https://github.com/GoogleWebComponents/google-gcloud
+@url https://github.com/GoogleWebComponents/google-cloud
 -->
 
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="bower_components/polymer/polymer.html">
 
-<polymer-element name="gcloud-gapi" attributes="client_id scopes apis">
+<polymer-element name="google-cloud-gapi" attributes="client_id scopes apis">
   <template>
   </template>
   <script>
-    Polymer('gcloud-gapi', {
+    Polymer('google-cloud-gapi', {
       ready: function() {
       },
       auth: function(cb, again) {
-        gcloud_gapi_loaded(function() {
+        google_cloud_gapi_loaded(function() {
           gapi.auth.authorize({
             client_id: this.client_id,
             scope: this.scopes,
@@ -41,7 +41,7 @@ library for Google Cloud Platform (gcloud) Polymer components.
 </polymer-element>
 
 <script>
-  gcloud_gapi_loaded = (function() {
+  google_cloud_gapi_loaded = (function() {
     var loaded = false;
     var callback;
     return function(cb) {
@@ -57,6 +57,6 @@ library for Google Cloud Platform (gcloud) Polymer components.
   })();
 </script>
 
-<script src="https://apis.google.com/js/client.js?onload=gcloud_gapi_loaded">
+<script src="https://apis.google.com/js/client.js?onload=google_cloud_gapi_loaded">
 </script>
 

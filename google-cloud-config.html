@@ -1,0 +1,32 @@
+<!--
+google-cloud-config encapsulates a Google developer project 
+configuration.
+
+##### Example
+
+    <google-cloud-config project="my-project-id"></google-cloud-config>
+
+@element google-cloud-config
+@blurb google-cloud-config encapsulates a Google developer project configuration.
+@status alpha
+@url https://github.com/GoogleWebComponents/google-cloud
+-->
+
+<link rel="import" href="bower_components/polymer/polymer.html">
+
+<polymer-element name="google-cloud-config" attributes="project">
+  <script>
+
+    Polymer({
+      /**
+       * The 'project' attribute is a string containing the 
+       * Google developer project ID.
+       *
+       * @attribute project
+       * @type string
+       */
+      project: ''
+    });
+
+  </script>
+</polymer-element>
