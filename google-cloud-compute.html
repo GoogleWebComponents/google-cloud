@@ -1,22 +1,22 @@
 <!--
   This file contains a collection of product specific
   components for interacting with Google Compute Engine,
-  organized under the gcloud-compute namespace.
+  organized under the google-cloud-compute namespace.
 -->
 
 <link rel="import" href="../polymer/polymer.html">
 
 <!--
-gcloud-compute-base is a base element containing common
+google-cloud-compute-base is a base element containing common
 data and behavior to be inherited by other components 
 within this collection. This element is intended for
 internal use within this component collection - it should 
 not be directly specified by developers.
 -->
 
-<polymer-element name="gcloud-compute-base" attributes="scope">
+<polymer-element name="google-cloud-compute-base" attributes="scope">
   
-  <link rel="stylesheet" href="google-gcloud.css">
+  <link rel="stylesheet" href="google-cloud.css">
 
   <template>
     <style>
@@ -66,8 +66,8 @@ not be directly specified by developers.
         scope: 'global',
 
         ready: function() {
-          this.gapi = document.querySelector('gcloud-gapi');
-          this.config = document.querySelector('gcloud-config');
+          this.gapi = document.querySelector('google-cloud-gapi');
+          this.config = document.querySelector('google-cloud-config');
         },
 
         getWaitFunc: function() {
@@ -105,26 +105,26 @@ not be directly specified by developers.
 </polymer-element>
 
 <!--
-gcloud-compute-image creates a private Compute Engine image
-in the project configured by a gcloud-config element.
+google-cloud-compute-image creates a private Compute Engine image
+in the project configured by a google-cloud-config element.
 
 ##### Example
 
-  <gcloud-gapi ...></gcloud-gapi>
-  <gcloud-config ...></gcloud-config>
-  <gcloud-compute-image id="my-image" 
+  <google-cloud-gapi ...></google-cloud-gapi>
+  <google-cloud-config ...></google-cloud-config>
+  <google-cloud-compute-image id="my-image" 
     src="gs://my-bucket/my-object.tar.gz">
-  </gcloud-compute-image>
+  </google-cloud-compute-image>
 
-@element gcloud-compute-image
-@blurb gcloud-compute-image creates a Google Compute Engine image from a Google Cloud Storage object.
+@element google-cloud-compute-image
+@blurb google-cloud-compute-image creates a Google Compute Engine image from a Google Cloud Storage object.
 @status alpha
-@url https://github.com/GoogleWebComponents/google-gcloud
+@url https://github.com/GoogleWebComponents/google-cloud
 -->
 
-<polymer-element name="gcloud-compute-image" 
+<polymer-element name="google-cloud-compute-image" 
   attributes="name src"
-  extends="gcloud-compute-base">
+  extends="google-cloud-compute-base">
 
   <script>
     Polymer({
@@ -169,26 +169,26 @@ in the project configured by a gcloud-config element.
 </polymer-element>
 
 <!--
-gcloud-compute-disk creates a Google Compute Engine disk.
+google-cloud-compute-disk creates a Google Compute Engine disk.
 Suitable defaults are chosen for all attributes so that,
 in the simplest use case, you can create a disk without 
 specifying any attributes.
 
 ##### Example
 
-  <gcloud-gapi ...></gcloud-gapi>
-  <gcloud-config ...></gcloud-config>
-  <gcloud-compute-disk id="my-disk"></gcloud-compute-disk>
+  <google-cloud-gapi ...></google-cloud-gapi>
+  <google-cloud-config ...></google-cloud-config>
+  <google-cloud-compute-disk id="my-disk"></google-cloud-compute-disk>
 
-@element gcloud-compute-disk
-@blurb gcloud-compute-disk creates a Google Compute Engine disk
+@element google-cloud-compute-disk
+@blurb google-cloud-compute-disk creates a Google Compute Engine disk
 @status alpha
-@url https://github.com/GoogleWebComponents/google-gcloud
+@url https://github.com/GoogleWebComponents/google-cloud
 -->
 
-<polymer-element name="gcloud-compute-disk" 
+<polymer-element name="google-cloud-compute-disk" 
   attributes="name zone size image" 
-  extends="gcloud-compute-base">
+  extends="google-cloud-compute-base">
 
   <script>
     Polymer({
@@ -230,7 +230,7 @@ specifying any attributes.
        * It's also acceptable to specify a null project
        * with or without the colon, which assumes the
        * desired image is to be taken from the project
-       * configured by the <gcloud-config> element.
+       * configured by the <google-cloud-config> element.
        *
        * @attribute image
        * @type string
@@ -276,7 +276,7 @@ specifying any attributes.
 </polymer-element>
 
 <!--
-gcloud-compute-instance creates a Compute Engine virtual 
+google-cloud-compute-instance creates a Compute Engine virtual 
 machine. Suitable defaults are chosen for all attributes 
 so that, in the simplest use case, you can create a disk 
 without specifying any attributes.
@@ -285,35 +285,35 @@ without specifying any attributes.
 
     Simple use case, wrapping text name and taking all defaults...
 
-    <gcloud-gapi ...></gcloud-gapi>
-    <gcloud-config ...></gcloud-config>
-    <gcloud-compute-instance onclick="this.go()">my-vm</gcloud-compute-instance> 
+    <google-cloud-gapi ...></google-cloud-gapi>
+    <google-cloud-config ...></google-cloud-config>
+    <google-cloud-compute-instance onclick="this.go()">my-vm</google-cloud-compute-instance> 
 
     More involved example, wrapping an image and specifying a desired boot
     image via the image attribute. This example also requests that the VM
     be started in the europe-west1 zone, and specifies some metadata
     to be consumed by the new VM via the metadata attribute...
 
-    <gcloud-gapi ...></gcloud-gapi>
-    <gcloud-config ...></gcloud-config>
-    <gcloud-compute-instance id="codelab-vm" name="codelab-vm"
+    <google-cloud-gapi ...></google-cloud-gapi>
+    <google-cloud-config ...></google-cloud-config>
+    <google-cloud-compute-instance id="codelab-vm" name="codelab-vm"
         type="n1-standard-1"
         zone="europe-west-1" 
         diskImage="google-containers:container-vm-v20140522"
         metadata='[{"key": "google-container-manifest", "value": "version: v1beta1\ncontainers:\n- name: nodejs-hello\n  image: google/nodejs-hello\n  ports:\n    - name: port8080\n      hostPort: 8080\n      containerPort: 8080\n"}]'
         onclick="this.go()">
       <img src="img/vm.png" height="70" width="70"></img>
-    </gcloud-compute-instance>
+    </google-cloud-compute-instance>
 
-@element gcloud-compute-instance
-@blurb gcloud-compute-instance creates a Compute Engine VM 
+@element google-cloud-compute-instance
+@blurb google-cloud-compute-instance creates a Compute Engine VM 
 @status alpha
-@url https://github.com/GoogleWebComponents/google-gcloud
+@url https://github.com/GoogleWebComponents/google-cloud
 -->
 
-<polymer-element name="gcloud-compute-instance" 
+<polymer-element name="google-cloud-compute-instance" 
   attributes="name zone metadata netName diskName diskType diskBoot diskAutodel diskSize diskImage"
-  extends="gcloud-compute-base">
+  extends="google-cloud-compute-base">
 
   <script>
     Polymer({
@@ -422,7 +422,7 @@ without specifying any attributes.
        * It's also acceptable to specify a null project
        * with or without the colon, which assumes the
        * desired image is to be taken from the project
-       * configured by the <gcloud-config> element.
+       * configured by the <google-cloud-config> element.
        *
        * @attribute diskImage
        * @type string

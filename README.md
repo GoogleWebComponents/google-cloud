@@ -1,4 +1,4 @@
-google-gcloud
+google-cloud
 =============
 
 This repository contains polymer elements for interacting
@@ -18,24 +18,24 @@ Our approach is to map the service identification part of the
 Cloud SDK's command syntax into a hyphen separated element
 name, which gives us the following mappings:
 
-| Cloud SDK Syntax   | Polymer Element Name |
-| ------------------ | -------------------- |
-| gcloud auth        | gcloud-auth          |
-| gcloud config      | gcloud-config        |
-| App Engine(*)      | gcloud-appengine     |
-| BigQuery(*)        | gcloud-bigquery      |
-| gcloud compute     | gcloud-compute       |
-| Cloud Datastore(*) | gcloud-datastorage   |
-| gcloud dns         | gcloud-dns           |
-| Cloud Storage      | gcloud-storage       |
-| gcloud sql         | gcloud-sql           |
+| Cloud SDK Syntax   | Polymer Element Name   |
+| ------------------ | ---------------------- |
+| gcloud auth        | google-cloud-auth      |
+| gcloud config      | google-cloud-config    |
+| App Engine(*)      | google-cloud-appengine |
+| BigQuery(*)        | google-cloud-bigquery  |
+| gcloud compute     | google-cloud-compute   |
+| Cloud Datastore(*) | google-cloud-datastore |
+| gcloud dns         | google-cloud-dns       |
+| Cloud Storage      | google-cloud-storage   |
+| gcloud sql         | google-cloud-sql       |
 
 (*) = command not yet implemented in Cloud SDK.
 
-Within each product (e.g. gcloud-compute, gcloud-storage), 
+Within each product (e.g. google-cloud-compute, google-cloud-storage), 
 there will be a potentially large number of sub-components
-(e.g. gcloud-compute-instance, gcloud-compute-disk, 
-gcloud-storage-bucket, gcloud-storage-object, etc.).
+(e.g. google-cloud-compute-instance, google-cloud-compute-disk, 
+google-cloud-storage-bucket, google-cloud-storage-object, etc.).
 The taxonomy for each set of sub-components will necessarily
 vary by product and is left to the design and implementation 
 of each product's components. Wherever possible, designers 
