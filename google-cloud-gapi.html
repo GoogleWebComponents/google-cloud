@@ -4,7 +4,7 @@ library for Google Cloud Platform (google-cloud) Polymer components.
 
 ##### Example
 
-  <google-cloud-gapi client_id="my-client-id" scope="https://www.googleapis.com/auth/compute" apis="compute@v1"></google-cloud-gapi>
+  <google-cloud-gapi clientId="YOUR_CLIENT_ID" scope="https://www.googleapis.com/auth/compute" apis="compute@v1"></google-cloud-gapi>
 
 @element google-cloud-gapi
 @blurb google-cloud-gapi provides access to the Google JavaScript client library for Google Cloud Platform (google-cloud) Polymer components.
@@ -14,7 +14,7 @@ library for Google Cloud Platform (google-cloud) Polymer components.
 
 <link rel="import" href="../polymer/polymer.html">
 
-<polymer-element name="google-cloud-gapi" attributes="client_id scopes apis">
+<polymer-element name="google-cloud-gapi" attributes="clientId scopes apis">
   <template>
   </template>
   <script>
@@ -24,7 +24,7 @@ library for Google Cloud Platform (google-cloud) Polymer components.
       auth: function(cb, again) {
         google_cloud_gapi_loaded(function() {
           gapi.auth.authorize({
-            client_id: this.client_id,
+            client_id: this.clientId,
             scope: this.scopes,
             immediate: again == true
           }, function(result) {
