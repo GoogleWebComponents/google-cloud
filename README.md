@@ -4,6 +4,8 @@ google-cloud
 This repository contains polymer elements for interacting
 with [Google Cloud Platform](http://example.com/) services. 
 
+See the [component landing page](http://googlewebcomponents.github.io/google-cloud) for more information.
+
 ### Naming Conventions
 Google Cloud Platform (GCP) encompasses a wide variety of 
 products and APIs so it's important to establish a clear and
