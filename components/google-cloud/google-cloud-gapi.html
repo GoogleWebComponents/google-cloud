@@ -1,0 +1,62 @@
+<!--
+google-cloud-gapi provides access to the Google JavaScript client 
+library for Google Cloud Platform (google-cloud) Polymer components.
+
+##### Example
+
+  <google-cloud-gapi clientId="YOUR_CLIENT_ID" scope="https://www.googleapis.com/auth/compute" apis="compute@v1"></google-cloud-gapi>
+
+@element google-cloud-gapi
+@blurb google-cloud-gapi provides access to the Google JavaScript client library for Google Cloud Platform (google-cloud) Polymer components.
+@status alpha
+@url https://github.com/GoogleWebComponents/google-cloud
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+
+<polymer-element name="google-cloud-gapi" attributes="clientId scopes apis">
+  <template>
+  </template>
+  <script>
+    Polymer('google-cloud-gapi', {
+      ready: function() {
+      },
+      auth: function(cb, again) {
+        google_cloud_gapi_loaded(function() {
+          gapi.auth.authorize({
+            client_id: this.clientId,
+            scope: this.scopes,
+            immediate: again == true
+          }, function(result) {
+            this.apis.split(' ').forEach(function(apiStr) {
+              var api = apiStr.split('@');
+              var apiName = api[0], apiVersion = api[1];
+              gapi.client.load(apiName, apiVersion, cb);
+            }.bind(this));
+          }.bind(this));
+        }.bind(this));
+      }
+    });
+  </script>
+</polymer-element>
+
+<script>
+  google_cloud_gapi_loaded = (function() {
+    var loaded = false;
+    var callback;
+    return function(cb) {
+      if (cb) {
+        callback = cb;
+      } else {
+        loaded = true;
+      }
+      if (callback && loaded) {
+        callback();
+      }
+    };
+  })();
+</script>
+
+<script src="https://apis.google.com/js/client.js?onload=google_cloud_gapi_loaded">
+</script>
+

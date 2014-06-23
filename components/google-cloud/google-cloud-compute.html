@@ -1,0 +1,554 @@
+<!--
+  This file contains a collection of product specific
+  components for interacting with Google Compute Engine,
+  organized under the google-cloud-compute namespace.
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+
+<!--
+google-cloud-compute-base is a base element containing common
+data and behavior to be inherited by other components 
+within this collection. This element is intended for
+internal use within this component collection - it should 
+not be directly specified by developers.
+-->
+
+<polymer-element name="google-cloud-compute-base" attributes="scope">
+  
+  <link rel="stylesheet" href="google-cloud.css">
+
+  <template>
+    <style>
+      .iblock { display: inline-block; }
+      .progress { visibility: {{progressDisplay}}; }
+    </style>
+    <span class="iblock" style="border:7px solid {{borderColor}};">
+      <span class="iblock" style="border:3px solid white">
+        <content></content>
+      </span>
+    </span>
+    <progress class="progress"></progress>
+  </template>
+
+  <script>
+    (function() {
+      // Run once. Private and static to the element.
+      var API_VERSION = 'v1';
+
+      Polymer({
+
+       /**
+         * The `author` attribute sets an initial author
+         * 
+         * @attribute author
+         * @type string
+         */
+        author: 'Marc Cohen',
+
+        borderColor: 'red',
+
+        progressDisplay: 'hidden',
+
+        baseUrl: 'https://www.googleapis.com/compute/' + 
+                 API_VERSION + '/projects/',
+
+        /**
+         * 'scope' is the Compute Engine scope associated 
+         * with a given resource. In practical terms, if will
+         * be a string taken from the following set of values:
+         * 'global', 'regional', 'zonal'
+         *
+         * @attribute scope
+         * @type string
+         * @default 'global'
+         */
+        scope: 'global',
+
+        ready: function() {
+          this.gapi = document.querySelector('google-cloud-gapi');
+          this.config = document.querySelector('google-cloud-config');
+        },
+
+        getWaitFunc: function() {
+          var wait_func = null;
+          if (this.scope == 'global') {
+            wait_func = gapi.client.compute.globalOperations;
+          } else if (this.scope == 'regional') {
+            wait_func = gapi.client.compute.regionOperations;
+          } else if (this.scope == 'zonal') {
+            wait_func = gapi.client.compute.zoneOperations;
+          }
+          return wait_func;
+        },
+
+        wait: function(result) {
+          console.log(result);
+          var get_req = {
+            operation: result.name,
+            project: this.config.project,
+          }
+          if (this.scope == 'zonal') {
+            get_req['zone'] = this.zone;
+          }
+          this.getWaitFunc().get(get_req).execute(function(result) {
+            if (result.status != "DONE") {
+              this.async(this.wait, result, 1000);
+            } else {
+              this.fire('done', this.name);
+            }
+          }.bind(this))
+        }
+      });
+    })();
+  </script>
+</polymer-element>
+
+<!--
+google-cloud-compute-image creates a private Compute Engine image
+in the project configured by a google-cloud-config element.
+
+##### Example
+
+  <google-cloud-gapi ...></google-cloud-gapi>
+  <google-cloud-config ...></google-cloud-config>
+  <google-cloud-compute-image id="my-image" 
+    src="gs://my-bucket/my-object.tar.gz">
+  </google-cloud-compute-image>
+
+@element google-cloud-compute-image
+@blurb google-cloud-compute-image creates a Google Compute Engine image from a Google Cloud Storage object.
+@status alpha
+@url https://github.com/GoogleWebComponents/google-cloud
+-->
+
+<polymer-element name="google-cloud-compute-image" 
+  attributes="name src"
+  extends="google-cloud-compute-base">
+
+  <script>
+    Polymer({
+      /**
+       * 'name' is the name to assign the image.
+       * @attribute name
+       * @type string
+       */
+      name: '',
+
+      /**
+       * 'src' points to the Cloud Storage object to use
+       * as input for creating the image.
+       *
+       * @attribute src
+       * @type string
+       */
+      src: '',
+
+      /**
+       * The 'go' method creates the Google Cloud Engine image.
+       * @method go
+       * @return {Object} Returns undefined.
+       */
+      go: function() {
+        this.gapi.auth(function(result) {
+          var payload = {
+            project: this.config.project,
+            resource: {
+              name: this.name,
+              sourceType: 'RAW',
+              rawDisk: {
+                source: this.src
+              }
+            }
+          };
+          gapi.client.compute.images.insert(payload).execute(this.wait.bind(this));
+        }.bind(this));
+      }
+    });
+  </script>
+</polymer-element>
+
+<!--
+google-cloud-compute-disk creates a Google Compute Engine disk.
+Suitable defaults are chosen for all attributes so that,
+in the simplest use case, you can create a disk without 
+specifying any attributes.
+
+##### Example
+
+  <google-cloud-gapi ...></google-cloud-gapi>
+  <google-cloud-config ...></google-cloud-config>
+  <google-cloud-compute-disk id="my-disk"></google-cloud-compute-disk>
+
+@element google-cloud-compute-disk
+@blurb google-cloud-compute-disk creates a Google Compute Engine disk
+@status alpha
+@url https://github.com/GoogleWebComponents/google-cloud
+-->
+
+<polymer-element name="google-cloud-compute-disk" 
+  attributes="name zone size image" 
+  extends="google-cloud-compute-base">
+
+  <script>
+    Polymer({
+      // Force zonal scope in base element.
+      scope: 'zonal',
+
+      /**
+       * 'name' is the name to assign to the new disk.
+       * @attribute name
+       * @type string
+       * @default 'my-disk'
+       */
+      name: 'my-disk',
+
+      /**
+       * 'zone' is the desired location for the new disk.
+       * @attribute zone
+       * @type string
+       * @default 'us-central1-a'
+       */
+      zone: 'us-central1-a',
+
+      /**
+       * 'size' is the capacity (in GB) for the new disk.
+       * @attribute size
+       * @type integer 
+       * @default '10'
+       */
+      size: 10,
+
+      /**
+       * 'image' is the image to use for the new disk.
+       * It may contain a ':', in which case the image
+       * string is assumed to contain a project and
+       * and image name with that project, e.g.,
+       *
+       *   debian-cloud:debian-7-wheezy-v20140606
+       *
+       * It's also acceptable to specify a null project
+       * with or without the colon, which assumes the
+       * desired image is to be taken from the project
+       * configured by the <google-cloud-config> element.
+       *
+       * @attribute image
+       * @type string
+       * @default 'debian-cloud:debian-7-wheezy-v20140606'
+       */
+      image: 'debian-cloud:debian-7-wheezy-v20140606',
+
+      /**
+       * The 'go' method creates the Compute Engine disk.
+       * @method go
+       * @return {Object} Returns undefined.
+       */
+      go: function() {
+        this.gapi.auth(function(result) {
+          var li = this.image.split(':');
+          var image_project = '';
+          var image_name = '';
+          if (li.length == 2) {
+            image_project = li[0]; 
+            image_name = li[1]; 
+          } else if (li.length == 1) {
+            image_project = this.config.project; 
+            image_name = li[0]; 
+          } else {
+            image_project = this.config.project; 
+            image_name = 'default'; 
+          }
+          var payload = {
+            project: this.config.project,
+            zone: this.zone,
+            resource: {
+              name: this.name,
+              sizeGb: this.size,
+              sourceImage: this.baseUrl + image_project + 
+                           '/global/images/' + image_name
+            }
+          };
+          gapi.client.compute.disks.insert(payload).execute(this.wait.bind(this));
+        }.bind(this));
+      }
+    });
+  </script>
+</polymer-element>
+
+<!--
+google-cloud-compute-instance creates a Compute Engine virtual 
+machine. Suitable defaults are chosen for all attributes 
+so that, in the simplest use case, you can create a disk 
+without specifying any attributes.
+
+##### Example
+
+    Simple use case, wrapping text name and taking all defaults...
+
+    <google-cloud-gapi ...></google-cloud-gapi>
+    <google-cloud-config ...></google-cloud-config>
+    <google-cloud-compute-instance onclick="this.go()">my-vm</google-cloud-compute-instance> 
+
+    More involved example, wrapping an image and specifying a desired boot
+    image via the image attribute. This example also requests that the VM
+    be started in the europe-west1 zone, and specifies some metadata
+    to be consumed by the new VM via the metadata attribute...
+
+    <google-cloud-gapi ...></google-cloud-gapi>
+    <google-cloud-config ...></google-cloud-config>
+    <google-cloud-compute-instance id="codelab-vm" name="codelab-vm"
+        type="n1-standard-1"
+        zone="europe-west-1" 
+        diskImage="google-containers:container-vm-v20140522"
+        metadata='[{"key": "google-container-manifest", "value": "version: v1beta1\ncontainers:\n- name: nodejs-hello\n  image: google/nodejs-hello\n  ports:\n    - name: port8080\n      hostPort: 8080\n      containerPort: 8080\n"}]'
+        onclick="this.go()">
+      <img src="img/vm.png" height="70" width="70"></img>
+    </google-cloud-compute-instance>
+
+@element google-cloud-compute-instance
+@blurb google-cloud-compute-instance creates a Compute Engine VM 
+@status alpha
+@url https://github.com/GoogleWebComponents/google-cloud
+-->
+
+<polymer-element name="google-cloud-compute-instance" 
+  attributes="name zone metadata netName diskName diskType diskBoot diskAutodel diskSize diskImage"
+  extends="google-cloud-compute-base">
+
+  <script>
+    Polymer({
+      // Element state must be one of:
+      // 'init', 'starting', 'started', 'stopping'
+      state: 'init',
+
+      // Force zonal scope in base element.
+      scope: 'zonal',
+
+      /**
+       * 'name' is the name of the new virtual machine.
+       * @attribute name
+       * @type string
+       * @default 'my-vm'
+       */
+      name: 'my-vm',
+
+      /**
+       * 'zone' is the desired zone for the new VM.
+       * @attribute zone
+       * @type string
+       * @default 'us-central1-a'
+       */
+      zone: 'us-central1-a',
+
+      /**
+       * 'type' is the desired machine type.
+       * @attribute type
+       * @type string
+       * @default 'f1-micro'
+       */
+      type: 'f1-micro',
+
+      /**
+       * 'metadata' is a desired key/value pair of metadata to send to the new VM.
+       * Following the convention established by the gcloud compute command line,
+       * the key/value pair are expected to be delineated by an '=' character.
+       *
+       * @attribute metadata
+       * @type string
+       * @default ''
+       */
+      metadata: '',
+
+      /**
+       * 'netName' is the desired network name.
+       * @attribute netName
+       * @type string
+       * @default 'default'
+       */
+      netName: 'default',
+
+      /**
+       * 'diskName' is the name to assign to the boot disk.
+       * @attribute diskName
+       * @type string
+       * @default 'same as VM name'
+       */
+      diskName: '',
+
+      /**
+       * 'diskType' is the desired type of the boot disk.
+       * @attribute diskType
+       * @type string
+       * @default 'PERSISTENT'
+       */
+      diskType: 'PERSISTENT',
+
+      /**
+       * 'diskBoot' is a boolean indicating whether the 
+       * disk should be bootable or not.
+       *
+       * @attribute diskBoot
+       * @type string
+       * @default 'true'
+       */
+      diskBoot: true,
+
+      /**
+       * 'diskAutodel' indicates whether to automatically
+       * delete the boot disk whenever the VM is deleted.
+       *
+       * @attribute diskAutodel
+       * @type string
+       * @default 'true'
+       */
+      diskAutodel: true,
+
+      /**
+       * 'diskSize' is the desired disk capacity (in GB).
+       * @attribute diskSize
+       * @type int
+       * @default 10
+       */
+      diskSize: 10,
+
+      /**
+       * 'diskImage' is the image to use for the boot disk.
+       * It may contain a ':', in which case the image
+       * string is assumed to contain a project and
+       * and image name with that project, e.g.,
+       *
+       *   debian-cloud:debian-7-wheezy-v20140606
+       *
+       * It's also acceptable to specify a null project
+       * with or without the colon, which assumes the
+       * desired image is to be taken from the project
+       * configured by the <google-cloud-config> element.
+       *
+       * @attribute diskImage
+       * @type string
+       * @default 'debian-cloud:debian-7-wheezy-v20140606'
+       */
+      diskImage: 'debian-cloud:debian-7-wheezy-v20140606',
+
+      /**
+       * The 'genInstancePayload' method generates a
+       * json payload for inserting an instance.
+       *
+       * @method genInstancePayload
+       * @return {Object} Returns a JSON object.
+       */
+      genInstancePayload: function() {
+        var li = this.diskImage.split(':');
+        var image_project = '';
+        var image_name = '';
+        if (li.length == 2) {
+          image_project = li[0]; 
+          image_name = li[1]; 
+        } else if (li.length == 1) {
+          image_project = this.config.project; 
+          image_name = li[0]; 
+        } else {
+          image_project = this.config.project; 
+          image_name = 'default'; 
+        }
+        if (!this.diskName) {
+          this.diskName = this.name;
+        }
+        var payload = {
+          project: this.config.project,
+          name: this.name,
+          zone: this.zone,
+          resource: {
+            name: this.name,
+            machineType: this.baseUrl + 
+              this.config.project + '/zones/' + this.zone + 
+              '/machineTypes/' + this.type,
+            networkInterfaces: [{ 
+              network: this.baseUrl + this.config.project +
+                       '/global/networks/' + this.netName,
+              accessConfigs: [{type: 'ONE_TO_ONE_NAT'}]
+            }],
+            disks: [{
+              type: this.diskType,
+              boot: this.diskBoot,
+              autoDelete: this.diskAutodel,
+              initializeParams: {
+                diskName: this.diskName,
+                diskSizeGb: this.diskSize,
+                sourceImage: this.baseUrl + image_project + 
+                             '/global/images/' + image_name
+              }
+            }] 
+          }
+        };
+        if (this.metadata) {
+          payload.resource.metadata =  {
+            'kind': 'compute#metadata',
+            'items': JSON.parse(this.metadata),
+          }
+        };
+        console.log('payload', payload);
+        return payload;
+      },
+
+      /**
+       * The 'progress' method displays or removes a 
+       * progress indicator and updates the border color
+       * for the contained content, as a function of the
+       * current state.
+       *
+       * @method progress
+       * @return {Object} Returns undefined.
+       */
+      progress: function() {
+        if (this.state == 'init' || this.state == 'started') {
+          // Hide progress indicator.
+          this.progressDisplay = 'hidden';
+          if (this.state == 'init') {
+            this.borderColor = 'red';
+          } else {
+            this.borderColor = 'green';
+          }
+        } else {
+          // Display progress indicator.
+          this.progressDisplay = 'inline';
+          this.borderColor = 'gray';
+        }
+      },
+
+      /**
+       * The 'go' method creates the Compute Engine VM.
+       * @method go
+       * @return {Object} Returns undefined.
+       */
+      go: function() {
+        this.gapi.auth(function(result) {
+          this.addEventListener('done', function(e) {
+            if (this.state == 'starting') {
+              this.state = 'started';
+            } else if (this.state == 'stopping') {
+              this.state = 'init';
+            } 
+            this.progress();
+          });
+          if (this.state == 'started') {
+            this.state = 'stopping';
+            this.progress();
+
+            var payload = {
+              project: this.config.project,
+              instance: this.name,
+              zone: this.zone,
+            };
+            gapi.client.compute.instances.delete(payload).execute(this.wait.bind(this));
+          } else if (this.state == 'init') {
+            this.state = 'starting';
+            this.progress();
+            var payload = this.genInstancePayload();
+            gapi.client.compute.instances.insert(payload).execute(this.wait.bind(this));
+          }
+        }.bind(this));
+      }
+    });
+  </script>
+</polymer-element>

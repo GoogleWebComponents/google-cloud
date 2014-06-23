@@ -1,0 +1,7 @@
+{
+  "name": "google-cloud",
+  "private": false,
+  "dependencies": {
+    "core-elements": "Polymer/core-elements#~0.3.3"
+  }
+}

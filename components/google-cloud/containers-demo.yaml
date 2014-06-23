@@ -1,0 +1,8 @@
+version: v1beta1
+containers:
+- name: nodejs-hello
+  image: google/nodejs-hello
+  ports:
+    - name: port8080
+      hostPort: 8080
+      containerPort: 8080
