@@ -312,7 +312,7 @@ without specifying any attributes.
 -->
 
 <polymer-element name="google-cloud-compute-instance" 
-  attributes="name zone metadata netName diskName diskType diskBoot diskAutodel diskSize diskImage"
+  attributes="name type zone metadata netName diskName diskType diskBoot diskAutodel diskSize diskImage"
   extends="google-cloud-compute-base">
 
   <script>
@@ -344,9 +344,9 @@ without specifying any attributes.
        * 'type' is the desired machine type.
        * @attribute type
        * @type string
-       * @default 'f1-micro'
+       * @default 'n1-standard-1'
        */
-      type: 'f1-micro',
+      type: 'n1-standard-1',
 
       /**
        * 'metadata' is a desired key/value pair of metadata to send to the new VM.
