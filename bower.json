@@ -8,7 +8,7 @@
   "description": "Polymer components for accessing Google Cloud Platform services.",
   "keywords": "Google, cloud, polymer, web-components",
   "main": "google-cloud.html",
-  "license": "MIT",
+  "license": "Apache2",
   "homepage": "https://github.com/GoogleWebComponents/google-cloud/",
   "ignore": [
     "**/.*"
