@@ -1,17 +1,27 @@
 {
   "name": "google-cloud",
-  "private": false,
+  "description": "Polymer components for accessing Google Cloud Platform services.",
+  "homepage": "https://github.com/GoogleWebComponents/google-cloud/",
   "version": "0.0.1",
   "authors": [
     "Marc Cohen <marccohen@google.com>"
   ],
-  "description": "Polymer components for accessing Google Cloud Platform services.",
-  "keywords": "Google, cloud, polymer, web-components",
   "main": "google-cloud.html",
   "license": "Apache2",
-  "homepage": "https://github.com/GoogleWebComponents/google-cloud/",
   "ignore": [
-    "**/.*"
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests",
+    "../"
+  ],
+  "keywords": [
+    "web-component",
+    "web-components",
+    "polymer",
+    "cloud",
+    "google"
   ],
   "dependencies": {
     "polymer": "Polymer/polymer#~0.3.3",
