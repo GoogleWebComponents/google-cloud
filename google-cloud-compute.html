@@ -84,11 +84,11 @@ not be directly specified by developers.
 
         getWaitFunc: function() {
           var wait_func = null;
-          if (this.scope == 'global') {
+          if (this.scope === 'global') {
             wait_func = this.$.compute.api.globalOperations;
-          } else if (this.scope == 'regional') {
+          } else if (this.scope === 'regional') {
             wait_func = this.$.compute.api.regionOperations;
-          } else if (this.scope == 'zonal') {
+          } else if (this.scope === 'zonal') {
             wait_func = this.$.compute.api.zoneOperations;
           }
           return wait_func;
@@ -100,7 +100,7 @@ not be directly specified by developers.
             operation: result.name,
             project: this.config.project,
           }
-          if (this.scope == 'zonal') {
+          if (this.scope === 'zonal') {
             get_req['zone'] = this.zone;
           }
           this.getWaitFunc().get(get_req).execute(function(result) {
@@ -257,10 +257,10 @@ specifying any attributes.
         var li = this.image.split(':');
         var image_project = '';
         var image_name = '';
-        if (li.length == 2) {
+        if (li.length === 2) {
           image_project = li[0];
           image_name = li[1];
-        } else if (li.length == 1) {
+        } else if (li.length === 1) {
           image_project = this.config.project;
           image_name = li[0];
         } else {
@@ -449,10 +449,10 @@ without specifying any attributes.
         var li = this.diskImage.split(':');
         var image_project = '';
         var image_name = '';
-        if (li.length == 2) {
+        if (li.length === 2) {
           image_project = li[0]; 
           image_name = li[1]; 
-        } else if (li.length == 1) {
+        } else if (li.length === 1) {
           image_project = this.config.project; 
           image_name = li[0]; 
         } else {
@@ -509,10 +509,10 @@ without specifying any attributes.
        * @return {Object} Returns undefined.
        */
       progress: function() {
-        if (this.state == 'init' || this.state == 'started') {
+        if (this.state === 'init' || this.state === 'started') {
           // Hide progress indicator.
           this.progressDisplay = 'hidden';
-          if (this.state == 'init') {
+          if (this.state === 'init') {
             this.borderColor = 'red';
           } else {
             this.borderColor = 'green';
@@ -531,14 +531,14 @@ without specifying any attributes.
        */
       go: function() {
         this.addEventListener('done', function(e) {
-          if (this.state == 'starting') {
+          if (this.state === 'starting') {
             this.state = 'started';
-          } else if (this.state == 'stopping') {
+          } else if (this.state === 'stopping') {
             this.state = 'init';
           }
           this.progress();
         });
-        if (this.state == 'started') {
+        if (this.state === 'started') {
           this.state = 'stopping';
           this.progress();
 
@@ -548,7 +548,7 @@ without specifying any attributes.
             zone: this.zone,
           };
           this.$.compute.api.instances.delete(payload).execute(this.wait.bind(this));
-        } else if (this.state == 'init') {
+        } else if (this.state === 'init') {
           this.state = 'starting';
           this.progress();
           var payload = this.genInstancePayload();
