@@ -164,12 +164,9 @@ in the project configured by a google-cloud-config element.
       go: function() {
         var payload = {
           project: this.config.project,
-          resource: {
-            name: this.name,
-            sourceType: 'RAW',
-            rawDisk: {
-              source: this.src
-            }
+          name: this.name,
+          rawDisk: {
+            source: this.src
           }
         };
         this.$.compute.api.images.insert(payload).execute(this.wait.bind(this));
@@ -270,12 +267,10 @@ specifying any attributes.
         var payload = {
           project: this.config.project,
           zone: this.zone,
-          resource: {
-            name: this.name,
-            sizeGb: this.size,
-            sourceImage: this.baseUrl + image_project +
-                         '/global/images/' + image_name
-          }
+          name: this.name,
+          sizeGb: this.size,
+          sourceImage: this.baseUrl + image_project +
+                       '/global/images/' + image_name
         };
         this.$.compute.api.disks.insert(payload).execute(this.wait.bind(this));
       }
@@ -464,33 +459,30 @@ without specifying any attributes.
         }
         var payload = {
           project: this.config.project,
-          name: this.name,
           zone: this.zone,
-          resource: {
-            name: this.name,
-            machineType: this.baseUrl + 
-              this.config.project + '/zones/' + this.zone + 
-              '/machineTypes/' + this.type,
-            networkInterfaces: [{ 
-              network: this.baseUrl + this.config.project +
-                       '/global/networks/' + this.netName,
-              accessConfigs: [{type: 'ONE_TO_ONE_NAT'}]
-            }],
-            disks: [{
-              type: this.diskType,
-              boot: this.diskBoot,
-              autoDelete: this.diskAutodel,
-              initializeParams: {
-                diskName: this.diskName,
-                diskSizeGb: this.diskSize,
-                sourceImage: this.baseUrl + image_project + 
-                             '/global/images/' + image_name
-              }
-            }] 
-          }
+          name: this.name,
+          machineType: this.baseUrl +
+            this.config.project + '/zones/' + this.zone +
+            '/machineTypes/' + this.type,
+          networkInterfaces: [{
+            network: this.baseUrl + this.config.project +
+                     '/global/networks/' + this.netName,
+            accessConfigs: [{type: 'ONE_TO_ONE_NAT'}]
+          }],
+          disks: [{
+            type: this.diskType,
+            boot: this.diskBoot,
+            autoDelete: this.diskAutodel,
+            initializeParams: {
+              diskName: this.diskName,
+              diskSizeGb: this.diskSize,
+              sourceImage: this.baseUrl + image_project +
+                           '/global/images/' + image_name
+            }
+          }]
         };
         if (this.metadata) {
-          payload.resource.metadata =  {
+          payload.metadata =  {
             'kind': 'compute#metadata',
             'items': JSON.parse(this.metadata),
           }
