@@ -8,14 +8,21 @@
 
   <script src="../platform/platform.js"></script>
   <link rel="import" href="../polymer/polymer.html">
+  <link rel="import" href="../google-signin/google-signin.html">
   <link rel="import" href="google-cloud-config.html">
-  <link rel="import" href="google-cloud-gapi.html">
   <link rel="import" href="google-cloud-compute.html">
   </style>
 </head>
 <body>
-  <google-cloud-gapi clientId="YOUR_CLIENT_ID" scopes="https://www.googleapis.com/auth/compute" apis="compute@v1"></google-cloud-gapi>
+  <div>
+    <google-signin
+      clientId="YOUR_CLIENT_ID"
+      scopes="https://www.googleapis.com/auth/compute">
+    </google-signin>
+  </div>
+
   <google-cloud-config project="YOUR_PROJECT_ID"></google-cloud-config>
+
   <google-cloud-compute-instance id="codelab-vm" name="codelab-vm" 
       diskImage="google-containers:container-vm-v20140522" 
       metadata='[{"key": "google-container-manifest", "value": "version: v1beta1\ncontainers:\n- name: nodejs-hello\n  image: google/nodejs-hello\n  ports:\n    - name: port8080\n      hostPort: 8080\n      containerPort: 8080\n"}]'
