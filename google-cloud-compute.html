@@ -157,11 +157,11 @@ in the project configured by a google-cloud-config element.
       src: '',
 
       /**
-       * The 'go' method creates the Google Cloud Engine image.
-       * @method go
+       * The 'create' method creates the Google Cloud Engine image.
+       * @method create
        * @return {Object} Returns undefined.
        */
-      go: function() {
+      create: function() {
         var payload = {
           project: this.config.project,
           resource: {
@@ -249,11 +249,11 @@ specifying any attributes.
       image: 'debian-cloud:debian-7-wheezy-v20140606',
 
       /**
-       * The 'go' method creates the Compute Engine disk.
-       * @method go
+       * The 'create' method creates the Compute Engine disk.
+       * @method create
        * @return {Object} Returns undefined.
        */
-      go: function() {
+      create: function() {
         var li = this.image.split(':');
         var image_project = '';
         var image_name = '';
@@ -295,7 +295,7 @@ without specifying any attributes.
 
     <google-cloud-gapi ...></google-cloud-gapi>
     <google-cloud-config ...></google-cloud-config>
-    <google-cloud-compute-instance onclick="this.go()">my-vm</google-cloud-compute-instance> 
+    <google-cloud-compute-instance onclick="this.create()">my-vm</google-cloud-compute-instance>
 
     More involved example, wrapping an image and specifying a desired boot
     image via the image attribute. This example also requests that the VM
@@ -309,7 +309,7 @@ without specifying any attributes.
         zone="europe-west-1" 
         diskImage="google-containers:container-vm-v20140522"
         metadata='[{"key": "google-container-manifest", "value": "version: v1beta1\ncontainers:\n- name: nodejs-hello\n  image: google/nodejs-hello\n  ports:\n    - name: port8080\n      hostPort: 8080\n      containerPort: 8080\n"}]'
-        onclick="this.go()">
+        onclick="this.create()">
       <img src="img/vm.png" height="70" width="70"></img>
     </google-cloud-compute-instance>
 
@@ -525,11 +525,11 @@ without specifying any attributes.
       },
 
       /**
-       * The 'go' method creates the Compute Engine VM.
-       * @method go
+       * The 'create' method creates the Compute Engine VM.
+       * @method create
        * @return {Object} Returns undefined.
        */
-      go: function() {
+      create: function() {
         this.addEventListener('done', function(e) {
           if (this.state === 'starting') {
             this.state = 'started';

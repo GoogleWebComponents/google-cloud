@@ -26,7 +26,7 @@
   <google-cloud-compute-instance id="codelab-vm" name="codelab-vm" 
       diskImage="google-containers:container-vm-v20140522" 
       metadata='[{"key": "google-container-manifest", "value": "version: v1beta1\ncontainers:\n- name: nodejs-hello\n  image: google/nodejs-hello\n  ports:\n    - name: port8080\n      hostPort: 8080\n      containerPort: 8080\n"}]'
-      onclick="this.go()">
+      onclick="this.create()">
     <img src="img/vm.png" height="70" width="70"></img>
   </google-cloud-compute-instance>
 
