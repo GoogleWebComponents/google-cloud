@@ -4,7 +4,7 @@ configuration.
 
 ##### Example
 
-    <google-cloud-config project="YOUR_PROJECT_ID"></google-cloud-config>
+    <google-cloud-config id="cfg" project="YOUR_PROJECT_ID"></google-cloud-config>
 
 @element google-cloud-config
 @blurb google-cloud-config encapsulates a Google developer project configuration.
@@ -13,11 +13,23 @@ configuration.
 -->
 
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../core-meta/core-meta.html">
 
-<polymer-element name="google-cloud-config" attributes="project">
+<polymer-element name="google-cloud-config" hidden extends="core-meta" attributes="project">
   <script>
 
     Polymer({
+      /**
+       * This element requires ID attribute. It can be anything, e.g. "config".
+       * Important thing is the id must be a non-empty string.
+       *
+       * @attribute id
+       * @type string
+       */
+
+      // Store google-cloud config separately from other core-meta data.
+      type: 'google-cloud',
+
       /**
        * The 'project' attribute is a string containing the 
        * Google developer project ID.

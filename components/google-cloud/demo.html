@@ -4,20 +4,29 @@
 <html>
 <head>
   <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
-  <script src="../platform/platform.js"></script>
-  <link rel="import" href="../polymer/polymer.html">
+  <title>google-cloud Demo</title>
+
+  <script src="../webcomponentsjs/webcomponents.min.js"></script>
   <link rel="import" href="google-cloud-config.html">
-  <link rel="import" href="google-cloud-gapi.html">
   <link rel="import" href="google-cloud-compute.html">
   </style>
 </head>
 <body>
-  <google-cloud-gapi clientId="YOUR_CLIENT_ID" scopes="https://www.googleapis.com/auth/compute" apis="compute@v1"></google-cloud-gapi>
-  <google-cloud-config project="YOUR_PROJECT_ID"></google-cloud-config>
+  <div>
+    <google-signin
+      clientId="YOUR_CLIENT_ID"
+      scopes="https://www.googleapis.com/auth/compute">
+    </google-signin>
+  </div>
+
+  <google-cloud-config id="config"
+    project="YOUR_PROJECT_ID">
+  </google-cloud-config>
+
   <google-cloud-compute-instance id="codelab-vm" name="codelab-vm" 
       diskImage="google-containers:container-vm-v20140522" 
       metadata='[{"key": "google-container-manifest", "value": "version: v1beta1\ncontainers:\n- name: nodejs-hello\n  image: google/nodejs-hello\n  ports:\n    - name: port8080\n      hostPort: 8080\n      containerPort: 8080\n"}]'
-      onclick="this.go()">
+      onclick="this.create()">
     <img src="img/vm.png" height="70" width="70"></img>
   </google-cloud-compute-instance>
 

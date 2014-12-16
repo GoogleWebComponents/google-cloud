@@ -5,6 +5,9 @@
 -->
 
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../google-apis/google-client-api.html">
+<link rel="import" href="../google-signin/google-signin.html">
+<link rel="import" href="google-cloud-config.html">
 
 <!--
 google-cloud-compute-base is a base element containing common
@@ -29,6 +32,12 @@ not be directly specified by developers.
       </span>
     </span>
     <progress class="progress"></progress>
+    <google-api-loader id="compute" name="compute" version="v1"></google-api-loader>
+    <google-signin-aware
+      scopes="https://www.googleapis.com/auth/compute"
+      on-google-signin-aware-success="{{authenticated}}">
+    </google-signin-aware>
+    <google-cloud-config id="meta"></google-cloud-config>
   </template>
 
   <script>
@@ -65,19 +74,25 @@ not be directly specified by developers.
          */
         scope: 'global',
 
+        isAuthenticated: false,
+
         ready: function() {
-          this.gapi = document.querySelector('google-cloud-gapi');
-          this.config = document.querySelector('google-cloud-config');
+          this.config = this.$.meta.list[0];
+        },
+
+        authenticated: function(e, details) {
+          this.$.compute.auth.setToken(details.result);
+          this.isAuthenticated = true;
         },
 
         getWaitFunc: function() {
           var wait_func = null;
-          if (this.scope == 'global') {
-            wait_func = gapi.client.compute.globalOperations;
-          } else if (this.scope == 'regional') {
-            wait_func = gapi.client.compute.regionOperations;
-          } else if (this.scope == 'zonal') {
-            wait_func = gapi.client.compute.zoneOperations;
+          if (this.scope === 'global') {
+            wait_func = this.$.compute.api.globalOperations;
+          } else if (this.scope === 'regional') {
+            wait_func = this.$.compute.api.regionOperations;
+          } else if (this.scope === 'zonal') {
+            wait_func = this.$.compute.api.zoneOperations;
           }
           return wait_func;
         },
@@ -88,7 +103,7 @@ not be directly specified by developers.
             operation: result.name,
             project: this.config.project,
           }
-          if (this.scope == 'zonal') {
+          if (this.scope === 'zonal') {
             get_req['zone'] = this.zone;
           }
           this.getWaitFunc().get(get_req).execute(function(result) {
@@ -145,24 +160,22 @@ in the project configured by a google-cloud-config element.
       src: '',
 
       /**
-       * The 'go' method creates the Google Cloud Engine image.
-       * @method go
+       * The 'create' method creates the Google Cloud Engine image.
+       * @method create
        * @return {Object} Returns undefined.
        */
-      go: function() {
-        this.gapi.auth(function(result) {
-          var payload = {
-            project: this.config.project,
-            resource: {
-              name: this.name,
-              sourceType: 'RAW',
-              rawDisk: {
-                source: this.src
-              }
+      create: function() {
+        var payload = {
+          project: this.config.project,
+          resource: {
+            name: this.name,
+            sourceType: 'RAW',
+            rawDisk: {
+              source: this.src
             }
-          };
-          gapi.client.compute.images.insert(payload).execute(this.wait.bind(this));
-        }.bind(this));
+          }
+        };
+        this.$.compute.api.images.insert(payload).execute(this.wait.bind(this));
       }
     });
   </script>
@@ -239,37 +252,35 @@ specifying any attributes.
       image: 'debian-cloud:debian-7-wheezy-v20140606',
 
       /**
-       * The 'go' method creates the Compute Engine disk.
-       * @method go
+       * The 'create' method creates the Compute Engine disk.
+       * @method create
        * @return {Object} Returns undefined.
        */
-      go: function() {
-        this.gapi.auth(function(result) {
-          var li = this.image.split(':');
-          var image_project = '';
-          var image_name = '';
-          if (li.length == 2) {
-            image_project = li[0]; 
-            image_name = li[1]; 
-          } else if (li.length == 1) {
-            image_project = this.config.project; 
-            image_name = li[0]; 
-          } else {
-            image_project = this.config.project; 
-            image_name = 'default'; 
+      create: function() {
+        var li = this.image.split(':');
+        var image_project = '';
+        var image_name = '';
+        if (li.length === 2) {
+          image_project = li[0];
+          image_name = li[1];
+        } else if (li.length === 1) {
+          image_project = this.config.project;
+          image_name = li[0];
+        } else {
+          image_project = this.config.project;
+          image_name = 'default';
+        }
+        var payload = {
+          project: this.config.project,
+          zone: this.zone,
+          resource: {
+            name: this.name,
+            sizeGb: this.size,
+            sourceImage: this.baseUrl + image_project +
+                         '/global/images/' + image_name
           }
-          var payload = {
-            project: this.config.project,
-            zone: this.zone,
-            resource: {
-              name: this.name,
-              sizeGb: this.size,
-              sourceImage: this.baseUrl + image_project + 
-                           '/global/images/' + image_name
-            }
-          };
-          gapi.client.compute.disks.insert(payload).execute(this.wait.bind(this));
-        }.bind(this));
+        };
+        this.$.compute.api.disks.insert(payload).execute(this.wait.bind(this));
       }
     });
   </script>
@@ -287,7 +298,7 @@ without specifying any attributes.
 
     <google-cloud-gapi ...></google-cloud-gapi>
     <google-cloud-config ...></google-cloud-config>
-    <google-cloud-compute-instance onclick="this.go()">my-vm</google-cloud-compute-instance> 
+    <google-cloud-compute-instance onclick="this.create()">my-vm</google-cloud-compute-instance>
 
     More involved example, wrapping an image and specifying a desired boot
     image via the image attribute. This example also requests that the VM
@@ -301,7 +312,7 @@ without specifying any attributes.
         zone="europe-west-1" 
         diskImage="google-containers:container-vm-v20140522"
         metadata='[{"key": "google-container-manifest", "value": "version: v1beta1\ncontainers:\n- name: nodejs-hello\n  image: google/nodejs-hello\n  ports:\n    - name: port8080\n      hostPort: 8080\n      containerPort: 8080\n"}]'
-        onclick="this.go()">
+        onclick="this.create()">
       <img src="img/vm.png" height="70" width="70"></img>
     </google-cloud-compute-instance>
 
@@ -312,7 +323,7 @@ without specifying any attributes.
 -->
 
 <polymer-element name="google-cloud-compute-instance" 
-  attributes="name zone metadata netName diskName diskType diskBoot diskAutodel diskSize diskImage"
+  attributes="name type zone metadata netName diskName diskType diskBoot diskAutodel diskSize diskImage"
   extends="google-cloud-compute-base">
 
   <script>
@@ -344,9 +355,9 @@ without specifying any attributes.
        * 'type' is the desired machine type.
        * @attribute type
        * @type string
-       * @default 'f1-micro'
+       * @default 'n1-standard-1'
        */
-      type: 'f1-micro',
+      type: 'n1-standard-1',
 
       /**
        * 'metadata' is a desired key/value pair of metadata to send to the new VM.
@@ -441,10 +452,10 @@ without specifying any attributes.
         var li = this.diskImage.split(':');
         var image_project = '';
         var image_name = '';
-        if (li.length == 2) {
+        if (li.length === 2) {
           image_project = li[0]; 
           image_name = li[1]; 
-        } else if (li.length == 1) {
+        } else if (li.length === 1) {
           image_project = this.config.project; 
           image_name = li[0]; 
         } else {
@@ -456,7 +467,6 @@ without specifying any attributes.
         }
         var payload = {
           project: this.config.project,
-          name: this.name,
           zone: this.zone,
           resource: {
             name: this.name,
@@ -501,10 +511,10 @@ without specifying any attributes.
        * @return {Object} Returns undefined.
        */
       progress: function() {
-        if (this.state == 'init' || this.state == 'started') {
+        if (this.state === 'init' || this.state === 'started') {
           // Hide progress indicator.
           this.progressDisplay = 'hidden';
-          if (this.state == 'init') {
+          if (this.state === 'init') {
             this.borderColor = 'red';
           } else {
             this.borderColor = 'green';
@@ -517,37 +527,35 @@ without specifying any attributes.
       },
 
       /**
-       * The 'go' method creates the Compute Engine VM.
-       * @method go
+       * The 'create' method creates the Compute Engine VM.
+       * @method create
        * @return {Object} Returns undefined.
        */
-      go: function() {
-        this.gapi.auth(function(result) {
-          this.addEventListener('done', function(e) {
-            if (this.state == 'starting') {
-              this.state = 'started';
-            } else if (this.state == 'stopping') {
-              this.state = 'init';
-            } 
-            this.progress();
-          });
-          if (this.state == 'started') {
-            this.state = 'stopping';
-            this.progress();
-
-            var payload = {
-              project: this.config.project,
-              instance: this.name,
-              zone: this.zone,
-            };
-            gapi.client.compute.instances.delete(payload).execute(this.wait.bind(this));
-          } else if (this.state == 'init') {
-            this.state = 'starting';
-            this.progress();
-            var payload = this.genInstancePayload();
-            gapi.client.compute.instances.insert(payload).execute(this.wait.bind(this));
+      create: function() {
+        this.addEventListener('done', function(e) {
+          if (this.state === 'starting') {
+            this.state = 'started';
+          } else if (this.state === 'stopping') {
+            this.state = 'init';
           }
-        }.bind(this));
+          this.progress();
+        });
+        if (this.state === 'started') {
+          this.state = 'stopping';
+          this.progress();
+
+          var payload = {
+            project: this.config.project,
+            instance: this.name,
+            zone: this.zone,
+          };
+          this.$.compute.api.instances.delete(payload).execute(this.wait.bind(this));
+        } else if (this.state === 'init') {
+          this.state = 'starting';
+          this.progress();
+          var payload = this.genInstancePayload();
+          this.$.compute.api.instances.insert(payload).execute(this.wait.bind(this));
+        }
       }
     });
   </script>

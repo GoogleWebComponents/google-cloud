@@ -1,18 +1,40 @@
 {
   "name": "google-cloud",
-  "private": false,
+  "description": "Polymer components for accessing Google Cloud Platform services.",
+  "homepage": "https://github.com/GoogleWebComponents/google-cloud/",
+  "authors": [
+    "Marc Cohen <marccohen@google.com>"
+  ],
+  "main": "google-cloud.html",
+  "license": "Apache2",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests",
+    "../"
+  ],
+  "keywords": [
+    "web-component",
+    "web-components",
+    "polymer",
+    "cloud",
+    "google"
+  ],
   "dependencies": {
-    "core-elements": "Polymer/core-elements#~0.3.3"
+    "polymer": "Polymer/polymer#^0.5.2",
+    "core-meta": "Polymer/core-meta#~0.5.2",
+    "google-apis": "GoogleWebComponents/google-apis#~0.4.3",
+    "google-signin": "GoogleWebComponents/google-signin#~v0.2.0"
   },
-  "homepage": "https://github.com/googlewebcomponents/google-cloud",
-  "_release": "53cdda5c27",
+  "_release": "648d8090d6",
   "_resolution": {
     "type": "branch",
-    "branch": "master",
-    "commit": "53cdda5c27618247f0bb95b5d0d968f2f2498d83"
+    "branch": "update-to-0.5.2",
+    "commit": "648d8090d6b7210581486779b8f150d2ef28f113"
   },
-  "_source": "git://github.com/googlewebcomponents/google-cloud.git",
-  "_target": "master",
-  "_originalSource": "googlewebcomponents/google-cloud",
-  "_direct": true
+  "_source": "git://github.com/crhym3/google-cloud.git",
+  "_target": "update-to-0.5.2",
+  "_originalSource": "crhym3/google-cloud"
 }
