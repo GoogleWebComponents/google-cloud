@@ -10,13 +10,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <html>
 <head>
   <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
-  <script src="../platform/platform.js"></script>
+  <script src="../webcomponentsjs/webcomponents.min.js"></script>
   <link rel="import" href="../core-component-page/core-component-page.html">
 </head>
 
 <body unresolved>
 
-  <core-component-page></core-component-page>
+  <core-component-page
+     moduleName="google-cloud"
+     sources='["google-cloud-config.html", "google-cloud-compute.html"]'>
+  </core-component-page>
+
 
 </body>
 </html>
