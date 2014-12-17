@@ -1,0 +1,7 @@
+{
+  "name": "google-cloud#gh-pages",
+  "private": true,
+  "dependencies": {
+    "google-cloud": "crhym3/google-cloud#update-to-0.5.2"
+  }
+}
