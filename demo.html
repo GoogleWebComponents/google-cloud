@@ -7,28 +7,45 @@
   <title>google-cloud Demo</title>
 
   <script src="../webcomponentsjs/webcomponents.js"></script>
+  <link rel="import" href="../google-signin/google-signin.html">
   <link rel="import" href="google-cloud-config.html">
   <link rel="import" href="google-cloud-compute.html">
   </style>
 </head>
-<body>
+<body unresolved>
   <div>
     <google-signin
-      clientId="YOUR_CLIENT_ID"
+      clientId="1054047045356-j8pgqgls9vdef3rl09hapoicumbte0bo.apps.googleusercontent.com"
       scopes="https://www.googleapis.com/auth/compute">
     </google-signin>
   </div>
 
-  <google-cloud-config id="config"
-    project="YOUR_PROJECT_ID">
-  </google-cloud-config>
+  <!-- Demo the google-cloud elements. -->
+  <polymer-element name="sample-cloud">
+    <template>
+      <p>Testing config for Project ID: <input type="text" name="projectId" value="{{projectId}}"></p>
 
-  <google-cloud-compute-instance id="codelab-vm" name="codelab-vm" 
-      diskImage="google-containers:container-vm-v20140522" 
-      metadata='[{"key": "google-container-manifest", "value": "version: v1beta1\ncontainers:\n- name: nodejs-hello\n  image: google/nodejs-hello\n  ports:\n    - name: port8080\n      hostPort: 8080\n      containerPort: 8080\n"}]'
-      onclick="this.create()">
-    <img src="img/vm.png" height="70" width="70"></img>
-  </google-cloud-compute-instance>
+      <google-cloud-config id="config"
+          project="{{projectId}}">
+      </google-cloud-config>
 
+      <google-cloud-compute-instance id="codelab-vm" name="codelab-vm" 
+          diskImage="google-containers:container-vm-v20140522" 
+          metadata='[{"key": "google-container-manifest", "value": "version: v1beta1\ncontainers:\n- name: nodejs-hello\n  image: google/nodejs-hello\n  ports:\n    - name: port8080\n      hostPort: 8080\n      containerPort: 8080\n"}]'
+          onclick="this.create()">
+        <img src="img/vm.png" height="70" width="70"></img>
+      </google-cloud-compute-instance>
+    </template>
+
+    <script>
+      Polymer('sample-cloud', {
+        publish: {
+          projectId: ''
+        }
+      });
+    </script>
+  </polymer-element>
+
+  <sample-cloud></sample-cloud>
 </body>
 </html>
