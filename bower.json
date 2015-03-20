@@ -27,7 +27,7 @@
     "polymer": "Polymer/polymer#^0.5.2",
     "core-meta": "Polymer/core-meta#~0.5.2",
     "google-apis": "GoogleWebComponents/google-apis#~0.4.3",
-    "google-signin": "GoogleWebComponents/google-signin#~v0.2.0"
+    "google-signin": "GoogleWebComponents/google-signin#~0.3.0"
   }
 }
 
