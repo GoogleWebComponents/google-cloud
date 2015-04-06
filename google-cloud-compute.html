@@ -11,14 +11,14 @@
 
 <!--
 google-cloud-compute-base is a base element containing common
-data and behavior to be inherited by other components 
+data and behavior to be inherited by other components
 within this collection. This element is intended for
-internal use within this component collection - it should 
+internal use within this component collection - it should
 not be directly specified by developers.
 -->
 
 <polymer-element name="google-cloud-compute-base" attributes="scope">
-  
+
   <link rel="stylesheet" href="google-cloud.css">
 
   <template>
@@ -49,7 +49,7 @@ not be directly specified by developers.
 
        /**
          * The `author` attribute sets an initial author
-         * 
+         *
          * @attribute author
          * @type string
          */
@@ -59,11 +59,11 @@ not be directly specified by developers.
 
         progressDisplay: 'hidden',
 
-        baseUrl: 'https://www.googleapis.com/compute/' + 
+        baseUrl: 'https://www.googleapis.com/compute/' +
                  API_VERSION + '/projects/',
 
         /**
-         * 'scope' is the Compute Engine scope associated 
+         * 'scope' is the Compute Engine scope associated
          * with a given resource. In practical terms, if will
          * be a string taken from the following set of values:
          * 'global', 'regional', 'zonal'
@@ -127,17 +127,17 @@ in the project configured by a google-cloud-config element.
 
   <google-cloud-gapi ...></google-cloud-gapi>
   <google-cloud-config ...></google-cloud-config>
-  <google-cloud-compute-image id="my-image" 
+  <google-cloud-compute-image id="my-image"
     src="gs://my-bucket/my-object.tar.gz">
   </google-cloud-compute-image>
 
 @element google-cloud-compute-image
 @blurb google-cloud-compute-image creates a Google Compute Engine image from a Google Cloud Storage object.
 @status alpha
-@url https://github.com/GoogleWebComponents/google-cloud
+@url https://googlewebcomponents.github.io/google-cloud
 -->
 
-<polymer-element name="google-cloud-compute-image" 
+<polymer-element name="google-cloud-compute-image"
   attributes="name src"
   extends="google-cloud-compute-base">
 
@@ -184,7 +184,7 @@ in the project configured by a google-cloud-config element.
 <!--
 google-cloud-compute-disk creates a Google Compute Engine disk.
 Suitable defaults are chosen for all attributes so that,
-in the simplest use case, you can create a disk without 
+in the simplest use case, you can create a disk without
 specifying any attributes.
 
 ##### Example
@@ -196,11 +196,11 @@ specifying any attributes.
 @element google-cloud-compute-disk
 @blurb google-cloud-compute-disk creates a Google Compute Engine disk
 @status alpha
-@url https://github.com/GoogleWebComponents/google-cloud
+@url https://googlewebcomponents.github.io/google-cloud
 -->
 
-<polymer-element name="google-cloud-compute-disk" 
-  attributes="name zone size image" 
+<polymer-element name="google-cloud-compute-disk"
+  attributes="name zone size image"
   extends="google-cloud-compute-base">
 
   <script>
@@ -227,7 +227,7 @@ specifying any attributes.
       /**
        * 'size' is the capacity (in GB) for the new disk.
        * @attribute size
-       * @type integer 
+       * @type integer
        * @default '10'
        */
       size: 10,
@@ -287,9 +287,9 @@ specifying any attributes.
 </polymer-element>
 
 <!--
-google-cloud-compute-instance creates a Compute Engine virtual 
-machine. Suitable defaults are chosen for all attributes 
-so that, in the simplest use case, you can create a disk 
+google-cloud-compute-instance creates a Compute Engine virtual
+machine. Suitable defaults are chosen for all attributes
+so that, in the simplest use case, you can create a disk
 without specifying any attributes.
 
 ##### Example
@@ -309,7 +309,7 @@ without specifying any attributes.
     <google-cloud-config ...></google-cloud-config>
     <google-cloud-compute-instance id="codelab-vm" name="codelab-vm"
         type="n1-standard-1"
-        zone="europe-west-1" 
+        zone="europe-west-1"
         diskImage="google-containers:container-vm-v20140522"
         metadata='[{"key": "google-container-manifest", "value": "version: v1beta1\ncontainers:\n- name: nodejs-hello\n  image: google/nodejs-hello\n  ports:\n    - name: port8080\n      hostPort: 8080\n      containerPort: 8080\n"}]'
         onclick="this.create()">
@@ -317,12 +317,12 @@ without specifying any attributes.
     </google-cloud-compute-instance>
 
 @element google-cloud-compute-instance
-@blurb google-cloud-compute-instance creates a Compute Engine VM 
+@blurb google-cloud-compute-instance creates a Compute Engine VM
 @status alpha
-@url https://github.com/GoogleWebComponents/google-cloud
+@url https://googlewebcomponents.github.io/google-cloud
 -->
 
-<polymer-element name="google-cloud-compute-instance" 
+<polymer-element name="google-cloud-compute-instance"
   attributes="name type zone metadata netName diskName diskType diskBoot diskAutodel diskSize diskImage"
   extends="google-cloud-compute-base">
 
@@ -395,7 +395,7 @@ without specifying any attributes.
       diskType: 'PERSISTENT',
 
       /**
-       * 'diskBoot' is a boolean indicating whether the 
+       * 'diskBoot' is a boolean indicating whether the
        * disk should be bootable or not.
        *
        * @attribute diskBoot
@@ -453,14 +453,14 @@ without specifying any attributes.
         var image_project = '';
         var image_name = '';
         if (li.length === 2) {
-          image_project = li[0]; 
-          image_name = li[1]; 
+          image_project = li[0];
+          image_name = li[1];
         } else if (li.length === 1) {
-          image_project = this.config.project; 
-          image_name = li[0]; 
+          image_project = this.config.project;
+          image_name = li[0];
         } else {
-          image_project = this.config.project; 
-          image_name = 'default'; 
+          image_project = this.config.project;
+          image_name = 'default';
         }
         if (!this.diskName) {
           this.diskName = this.name;
@@ -470,10 +470,10 @@ without specifying any attributes.
           zone: this.zone,
           resource: {
             name: this.name,
-            machineType: this.baseUrl + 
-              this.config.project + '/zones/' + this.zone + 
+            machineType: this.baseUrl +
+              this.config.project + '/zones/' + this.zone +
               '/machineTypes/' + this.type,
-            networkInterfaces: [{ 
+            networkInterfaces: [{
               network: this.baseUrl + this.config.project +
                        '/global/networks/' + this.netName,
               accessConfigs: [{type: 'ONE_TO_ONE_NAT'}]
@@ -485,10 +485,10 @@ without specifying any attributes.
               initializeParams: {
                 diskName: this.diskName,
                 diskSizeGb: this.diskSize,
-                sourceImage: this.baseUrl + image_project + 
+                sourceImage: this.baseUrl + image_project +
                              '/global/images/' + image_name
               }
-            }] 
+            }]
           }
         };
         if (this.metadata) {
@@ -502,7 +502,7 @@ without specifying any attributes.
       },
 
       /**
-       * The 'progress' method displays or removes a 
+       * The 'progress' method displays or removes a
        * progress indicator and updates the border color
        * for the contained content, as a function of the
        * current state.

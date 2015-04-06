@@ -1,12 +1,12 @@
 {
   "name": "google-cloud",
-  "description": "Polymer components for accessing Google Cloud Platform services.",
-  "homepage": "https://github.com/GoogleWebComponents/google-cloud/",
   "version": "0.0.2",
+  "description": "Polymer components for accessing Google Cloud Platform services.",
+  "homepage": "https://googlewebcomponents.github.io/google-cloud",
+  "main": "google-cloud.html",
   "authors": [
     "Marc Cohen <marccohen@google.com>"
   ],
-  "main": "google-cloud.html",
   "license": "Apache2",
   "ignore": [
     "**/.*",
